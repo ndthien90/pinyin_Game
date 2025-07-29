@@ -343,7 +343,7 @@
         /* Chinese Text Display */
         .chinese-text-display { /* New style for Chinese text display */
             font-family: 'Kaiti', sans-serif; /* Use Noto Sans SC font for Chinese */
-            font-size: clamp(3em, 15vw, 5em);
+            font-size: clamp(2em, 15vw, 3em);
             color: #d32f2f;
             font-weight: normal;
             cursor: pointer;
@@ -1505,7 +1505,7 @@ im|jīn|hôm
                             case 'chinese':
                                 displayText = correspondingWord ? correspondingWord.chinese : 'N/A';
                                 cell.style.fontFamily = 'Kaiti, sans-serif'; // Apply Chinese font
-                                cell.style.fontSize = 'clamp(1.2em, 4vw, 2em)'; // Adjust font size for Chinese characters
+                                cell.style.fontSize = 'clamp(1.2em, 4vw, 1.8em)'; // Adjust font size for Chinese characters
                                 break;
                             default:
                                 displayText = cellData.pinyin;
