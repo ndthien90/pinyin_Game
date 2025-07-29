@@ -1,15 +1,15 @@
-大|to, lớn|tà|dā|*dà|tǎ
-天|trời|diān|tián|*tiān|diàn
-地|đất|tì|dé|*dì|dī
-头|đầu|dòu|tōu|*tóu|dōu
-带|mang theo|tài|dāi|*dài|tái
-太|quá|dài|tāi|*tài|dāi
-多|nhiều|tuō|dūo|*duō|tuó
-听|nghe|dīng|tǐng|*tīng|dǐng
-打|đánh|tá|dá|*dǎ|tǎ
-跳|nhảy|diào|tiāo|*tiào|tìao
-到|đến|tào|daò|*dào|táo
-同|cùng|dōng|tōng|*tóng|dòng
-都|đều|tōu|dòu|*dōu|tòu
-短|ngắn|tuán|duàn|*duǎn|dǎn
-题|đề, bài|dí|tì|*tí|dǐ
+看书 | kàn shū | đọc sách
+写字 | xiě zì | viết chữ
+画画 | huà huà | vẽ tranh
+睡觉 | shuìjiào | ngủ
+起床 | qǐchuáng | thức dậy
+吃饭 | chīfàn | ăn cơm
+喝水 | hē shuǐ | uống nước
+买东西 | mǎi dōngxi | mua đồ
+看电视 | kàn diànshì | xem tivi
+听音乐 | tīng yīnyuè | nghe nhạc
+打电话 | dǎ diànhuà | gọi điện thoại
+说话 | shuōhuà | nói chuyện
+上学 | shàngxué | đi học
+放学 | fàngxué | tan học
+回家 | huí jiā | về nhà

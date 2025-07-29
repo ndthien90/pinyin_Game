@@ -6,5 +6,5 @@ start "" python -m http.server
 timeout /t 1 > nul
 
 :: Mở địa chỉ localhost:8000 trong trình duyệt mặc định
-start http://localhost:8000/pinyin_practice_app19_OK.html
+start http://localhost:8000/
 

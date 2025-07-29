@@ -1,15 +1,15 @@
-八|tám|bá|pā|*bā|pà
-把|cầm, nắm|pǎ|bā|*bǎ|pà
-白|trắng|pái|bǎi|*bái|pài
-百|trăm|pǎi|bài|*bǎi|pāi
-班|lớp|bǎn|pān|*bān|pàn
-包|bao, gói|pāo|bǎo|*bāo|pào
-杯|cốc, ly|pēi|bèi|*bēi|pěi
-本|quyển (sách)|pén|bèn|*běn|pèn
-笔|bút|pǐ|bì|*bǐ|pì
-布|vải|pù|bǔ|*bù|pǔ
-爬|bò, leo|bá|pà|*pá|bà
-旁|bên cạnh|pàng|bāng|*páng|bàng
-跑|chạy|bǎo|pào|*pǎo|bāo
-盘|đĩa|bán|bǎn|*pán|pān
-票|vé|biāo|piāo|*piào|pìao
+上课 | shàngkè | lên lớp
+下课 | xiàkè | tan học
+作业 | zuòyè | bài tập
+考试 | kǎoshì | kỳ thi
+成绩 | chéngjì | thành tích, điểm số
+铅笔 | qiānbǐ | bút chì
+书包 | shūbāo | cặp sách
+黑板 | hēibǎn | bảng đen
+教室 | jiàoshì | lớp học
+图书 | túshū | sách vở
+图书馆 | túshūguǎn | thư viện
+洗澡 | xǐzǎo | tắm
+刷牙 | shuāyá | đánh răng
+穿衣 | chuān yī | mặc quần áo
+上网 | shàngwǎng | lên mạng
