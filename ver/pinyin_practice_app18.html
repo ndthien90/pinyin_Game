@@ -1,0 +1,2092 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Luyện Tập Pinyin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Mulish:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Basic CSS Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body Styles */
+        body {
+            font-family: 'Mulish', sans-serif; /* Use Mulish as the primary font */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Changed to flex-start to prevent overflow on mobile */
+            padding: 10px;
+            overflow-x: hidden;
+        }
+
+        /* Main Container Styles */
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px; /* Slightly reduced padding */
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            margin: 10px 0; /* Added margin for better centering */
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        /* Header Section Styles */
+        .header {
+            margin-bottom: 20px; /* Reduced margin-bottom */
+        }
+
+        /* Main Title */
+        .title {
+            font-size: clamp(1.8em, 5vw, 2.5em); /* Responsive font size */
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Subtitle */
+        .subtitle {
+            font-size: clamp(0.9em, 3vw, 1.1em); /* Responsive font size */
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+
+        /* Practice Selector Section - New */
+        .practice-selector {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border-left: 5px solid #2196F3;
+        }
+        
+        .practice-selector h3 {
+            margin-top: 0;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: clamp(1em, 4vw, 1.2em);
+        }
+        
+        .student-info {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .student-info label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: clamp(1em, 3vw, 1.1em);
+        }
+        
+        .student-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: clamp(1em, 3vw, 1.1em);
+            font-weight: 500;
+            background: white;
+            transition: all 0.3s ease;
+            font-family: 'Mulish', sans-serif;
+        }
+        
+        .student-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .student-input::placeholder {
+            color: #999;
+            font-weight: normal;
+        }
+        
+        .student-input.error {
+            border-color: #f44336;
+            box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.1);
+        }
+        
+        .dropdown-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .practice-dropdown {
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: clamp(0.9em, 3vw, 1.1em);
+            font-weight: 600;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 200px;
+            max-width: 300px;
+            font-family: 'Mulish', sans-serif;
+        }
+        
+        .practice-dropdown:hover {
+            border-color: #2196F3;
+            box-shadow: 0 2px 10px rgba(33, 150, 243, 0.2);
+        }
+        
+        .practice-dropdown:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+        
+        .load-btn {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: clamp(0.9em, 3vw, 1.1em);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-family: 'Mulish', sans-serif;
+            min-width: 120px;
+            white-space: nowrap;
+            -webkit-tap-highlight-color: rgba(33, 150, 243, 0.3);
+            user-select: none;
+        }
+        
+        .load-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
+        }
+        
+        .load-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .loading {
+            display: none;
+            margin: 15px 0;
+            padding: 15px;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            color: #856404;
+            font-size: clamp(0.9em, 3vw, 1em);
+        }
+        
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            border: 2px solid #f44336;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            display: none;
+            font-size: clamp(0.9em, 3vw, 1em);
+        }
+        
+        .practice-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            color: #1976d2;
+            font-size: clamp(0.9em, 3vw, 1em);
+            display: none;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .action-btn {
+            padding: 12px 24px; /* Slightly larger padding for better touch */
+            border: none;
+            border-radius: 8px;
+            font-size: clamp(1em, 3vw, 1.1em); /* Adjusted font size */
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 150px;
+            max-width: 200px;
+            justify-content: center;
+        }
+        
+        .start-game-btn { /* Renamed for clarity */
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Game Section */
+        .game-section {
+            display: none; /* Hidden by default, will be shown when game starts */
+        }
+
+        /* Stats Section Styles */
+        .stats {
+            display: flex;
+            justify-content: center; /* Changed from space-around to center */
+            gap: 10px; /* Added gap for spacing between items */
+            margin-bottom: 30px;
+            flex-wrap: nowrap; /* Prevent wrapping on small screens */
+            padding: 15px; /* Added padding */
+            background: #f8f9fa; /* Added background */
+            border-radius: 15px; /* Rounded corners */
+        }
+
+        /* Each Stat Item */
+        .stat-item {
+            background: #f8f9fa; /* Hide background to only show stats background */
+            padding: 0; /* Remove padding to avoid extra whitespace */
+            border-left: none; /* Remove border */
+            margin: 0; /* Changed margin from 5px to 0 to rely on gap */
+            flex: 1;
+            min-width: 120px;
+            text-align: center; /* Ensure content is centered within each item */
+        }
+        
+        .stat-item > div { /* Apply padding directly to content */
+            padding: 15px 20px;
+            border-radius: 12px;
+            //border-left: 4px solid #3498db;
+            background: white; /* Re-add white background for each item */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Add subtle box-shadow */
+        }
+
+        /* Stat Item Label */
+        .stat-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Stat Item Value */
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-top: 5px;
+        }
+
+        /* Game Area */
+        .game-area {
+            margin-bottom: 30px;
+        }
+
+        /* Current Word Display */
+        .current-word {
+            background: #e8f4fd;
+            border: 2px solid #3498db;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        /* Current Word Label */
+        .current-word-label {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        /* Chinese Text Display */
+        .chinese-text-display { /* New style for Chinese text display */
+            font-family: 'Noto Sans SC', sans-serif; /* Use Noto Sans SC font for Chinese */
+            font-size: clamp(3em, 15vw, 5em);
+            color: #d32f2f;
+            font-weight: normal;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+        .chinese-text-display.pinyin-font {
+            font-family: 'Mulish', sans-serif;
+            font-size: clamp(1.8em, 8vw, 2.5em); /* Smaller for pinyin */
+            color: #2c3e50; /* Pinyin color */
+        }
+        .chinese-text-display:hover {
+            transform: scale(1.1);
+            color: #b71c1c;
+        }
+
+        .meaning-display { /* New style for meaning display */
+            font-size: clamp(1.1em, 4vw, 1.4em);
+            color: #666;
+            margin-bottom: 10px;
+            font-weight: 400;
+            font-style: italic;
+        }
+        .meaning-display.pinyin-font {
+            font-style: normal; /* Pinyin usually not italic */
+            font-size: clamp(1.1em, 4vw, 1.4em); /* Pinyin size */
+        }
+
+
+        .audio-btn {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: clamp(45px, 12vw, 60px);
+            height: clamp(45px, 12vw, 60px);
+            font-size: clamp(1.2em, 4vw, 1.5em);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+            margin: 10px auto;
+            touch-action: manipulation;
+        }
+        
+        .audio-btn:hover, .audio-btn:active {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+        
+        .audio-btn.playing {
+            animation: pulse 1s infinite;
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+        
+        .audio-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .audio-btn.error {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            animation: none;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Pinyin Grid */
+        .pinyin-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        /* Pinyin Cell */
+        .pinyin-cell {
+            background: #ffffff;
+            border: 2px solid #ecf0f1;
+            border-radius: 12px;
+            padding: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation; /* Added for touch optimization */
+        }
+
+        /* Hover effect for pinyin cell */
+        .pinyin-cell:hover {
+            border-color: #3498db;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.2);
+        }
+
+        /* Styles for correct pinyin cell */
+        .pinyin-cell.correct {
+            background: #d5f4e6;
+            border-color: #27ae60;
+            color: #27ae60;
+            animation: correctPulse 0.8s ease-in-out;
+        }
+
+        /* Styles for incorrect pinyin cell */
+        .pinyin-cell.incorrect {
+            background: #ffeaea;
+            border-color: #e74c3c;
+            color: #e74c3c;
+            animation: incorrectShake 0.5s ease-in-out;
+        }
+
+        /* Styles for completely hidden pinyin cell */
+        .pinyin-cell.hidden {
+            visibility: hidden; /* Use visibility to maintain grid position */
+            pointer-events: none; /* Disable mouse/touch interaction */
+            opacity: 0;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        /* Styles for disabled pinyin cell */
+        .pinyin-cell.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* Keyframe for shake effect */
+        @keyframes incorrectShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        /* Controls Area (buttons) */
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap; /* Allow wrapping on small screens */
+        }
+
+        /* General Button Styles */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: 'Mulish', sans-serif;
+            touch-action: manipulation;
+            flex-grow: 1; /* Allow buttons to grow */
+            min-width: 120px; /* Minimum width */
+        }
+
+        /* Primary Button */
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        /* Secondary Button */
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+            transform: translateY(-2px);
+        }
+
+        /* Success Button */
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+            transform: translateY(-2px);
+        }
+
+        /* Mode Toggle Button */
+        .btn-mode-toggle {
+            background: linear-gradient(45deg, #FFC107, #FFA000); /* Orange-yellow color */
+            color: white;
+        }
+
+        .btn-mode-toggle:hover {
+            background: linear-gradient(45deg, #FFB300, #FF8F00);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            background: #ecf0f1;
+            height: 8px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        /* Progress Bar Fill */
+        .progress-fill {
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* Result Modal - Enhanced */
+        .result-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 10px; /* Added padding for modal on mobile */
+        }
+
+        /* Result Modal Content */
+        .result-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px; /* Increased max-width */
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .result-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        /* Result Modal Title */
+        .result-title {
+            font-size: clamp(1.8em, 5vw, 2.5em);
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .result-title span {
+            color: #667eea; /* Color for student name */
+        }
+
+        /* Stats in Result Modal */
+        .result-stats {
+            margin-bottom: 30px;
+        }
+
+        /* Each stat item in modal */
+        .result-stat {
+            margin-bottom: 15px;
+        }
+
+        /* Stat label in modal */
+        .result-stat-label {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+
+        /* Stat value in modal */
+        .result-stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #3498db;
+        }
+
+        /* High accuracy color */
+        .accuracy-high { color: #27ae60; }
+        /* Medium accuracy color */
+        .accuracy-medium { color: #f39c12; }
+        /* Low accuracy color */
+        .accuracy-low { color: #e74c3c; }
+
+        .result-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .result-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: clamp(0.9em, 3vw, 1.1em);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-family: 'Mulish', sans-serif;
+            touch-action: manipulation;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .reset-btn {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+            color: white;
+        }
+        
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3);
+        }
+        
+        .back-to-selection-btn {
+            background: linear-gradient(45deg, #9C27B0, #7B1FA2);
+            color: white;
+        }
+        
+        .back-to-selection-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(156, 39, 176, 0.3);
+        }
+
+        .audio-status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: clamp(0.8em, 2.5vw, 0.9em);
+            display: none;
+        }
+
+        .audio-status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .audio-status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        /* Media queries for mobile devices */
+        @media (max-width: 600px) {
+            body {
+                padding: 0; /* Remove body padding for container to take full screen */
+            }
+
+            .container {
+                border-radius: 0; /* Remove container border-radius */
+                min-height: 100vh; /* Take full screen height */
+                padding: 15px; /* Reduce padding */
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between; /* Push content apart */
+                margin: 0; /* Remove margin */
+            }
+            
+            .stats {
+                flex-direction: row; /* Keep stat items in a row */
+                justify-content: center; /* Changed from space-around to center */
+                gap: 5px; /* Reduce gap between items */
+            }
+            
+            .stat-item {
+                padding: 10px 15px; /* Reduce padding */
+                min-width: unset; /* Remove min-width for better scaling */
+                flex: 1; /* Ensure items take up equal space */
+            }
+
+            .stat-label {
+                font-size: 10px; /* Reduce font size */
+            }
+
+            .stat-value {
+                font-size: 20px; /* Reduce font size */
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .pinyin-cell {
+                padding: 15px;
+                font-size: 16px;
+                min-height: 60px;
+            }
+
+            .dropdown-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .practice-dropdown {
+                width: 100%;
+                min-width: auto;
+                max-width: none;
+            }
+            
+            .load-btn {
+                width: 100%;
+                min-width: auto;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .action-btn {
+                width: 100%;
+                min-width: auto;
+                max-width: none;
+            }
+        }
+
+        /* Extra small screens */
+        @media (max-width: 480px) {
+            body {
+                padding: 2px;
+            }
+            
+            .container {
+                padding: 10px;
+                margin: 2px 0;
+            }
+            
+            .practice-selector {
+                padding: 10px;
+            }
+            
+            .game-area {
+                padding: 5px;
+            }
+            
+            .pinyin-grid {
+                gap: 10px;
+            }
+            
+            .pinyin-cell {
+                padding: 10px;
+                font-size: 14px;
+            }
+        }
+
+        /* Landscape mobile optimization */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .container {
+                min-height: auto;
+            }
+            
+            .chinese-text-display {
+                font-size: clamp(2.5em, 12vw, 4em);
+            }
+        }
+
+        /* Touch device optimizations */
+        @media (hover: none) and (pointer: coarse) {
+            .pinyin-cell:hover {
+                border-color: #ecf0f1;
+                transform: none;
+                box-shadow: none;
+            }
+            
+            .audio-btn:hover {
+                transform: none;
+                box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+            }
+            
+            .btn:hover, .action-btn:hover, .reset-btn:hover, .back-to-selection-btn:hover, .load-btn:hover {
+                transform: none;
+            }
+            
+            /* Better touch targets for mobile */
+            button, .pinyin-cell {
+                min-height: 44px;
+                min-width: 44px;
+            }
+            
+            /* Improve button press feedback on touch devices */
+            button:active, .pinyin-cell:active:not(.disabled) {
+                opacity: 0.8;
+                transform: scale(0.98);
+            }
+            
+            /* Ensure animations work on touch devices */
+            .pinyin-cell.correct {
+                animation: correctPulse 0.8s ease-in-out !important;
+            }
+            
+            .pinyin-cell.incorrect {
+                animation: incorrectShake 0.5s ease-in-out !important;
+            }
+        }
+
+        /* High DPI screens */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .chinese-text-display {
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">🎧 Luyện Tập Pinyin</h1>
+            <p class="subtitle">Nghe và chọn pinyin đúng từ lưới</p>
+        </div>
+
+        <!-- Practice Selection Section -->
+        <div class="practice-selector" id="practice-selector">
+            <h3>🎯 Thông tin học sinh và Bài luyện tập:</h3>
+            
+            <!-- Student Name Input -->
+            <div class="student-info">
+                <label for="student-name">👨‍🎓 Tên học sinh:</label>
+                <input type="text" id="student-name" class="student-input" placeholder="Nhập tên của bạn..." maxlength="50">
+            </div>
+            
+            <div class="dropdown-container">
+                <select class="practice-dropdown" id="practice-dropdown">
+                    <option value="">Chọn bài luyện tập...</option>
+                </select>
+                <button class="load-btn" id="load-btn">🚀 Tải Bài</button>
+                <button class="btn btn-mode-toggle" id="toggleDisplayModeBtn">👁️ Chế độ: Pinyin</button>
+            </div>
+            <div class="loading" id="loading">⏳ Đang tải dữ liệu...</div>
+            <div class="error" id="error"></div>
+            <div class="practice-info" id="practice-info"></div>
+        </div>
+
+        <!-- Game Section -->
+        <div class="game-section" id="game-section">
+            <div class="stats">
+                <div class="stat-item">
+                    <div>
+                        <div class="stat-label">Điểm số</div>
+                        <div class="stat-value" id="score">0</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div>
+                        <div class="stat-label">Tiến độ</div>
+                        <div class="stat-value" id="progress">0/0</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div>
+                        <div class="stat-label">Chính xác</div>
+                        <div class="stat-value" id="accuracy">0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div class="game-area">
+                <div class="current-word">
+                    <div class="current-word-label">Từ hiện tại:</div>
+                    <div class="chinese-text-display" id="chineseTextDisplay">Bấm "Bắt đầu"</div>
+                    <div class="meaning-display" id="meaningDisplay">để chơi</div>
+                    <button class="audio-btn" id="audioBtn" title="Phát âm">🔊</button>
+                    <div id="audio-status" class="audio-status"></div>
+                </div>
+
+                <div class="pinyin-grid" id="pinyinGrid">
+                    <!-- Pinyin cells will be generated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-primary" id="startBtn">Bắt đầu</button>
+                <button class="btn btn-success" id="newGameBtn" style="display: none;">Chơi lại</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Modal -->
+    <div class="result-modal" id="resultModal">
+        <div class="result-content">
+            <h2 class="result-title">Kết quả luyện tập của <span></span></h2>
+            <div style="font-size: clamp(1.1em, 3.5vw, 1.3em); color: #666; margin-bottom: 10px;">
+                📚 <span id="finalPracticeName"></span>
+            </div>
+            <div style="font-size: clamp(1em, 3vw, 1.2em); color: #888; margin-bottom: 15px;">
+                🔢 Lần nộp: <span id="finalAttemptCount">0</span>
+            </div>
+            <div class="result-stats">
+                <div class="result-stat">
+                    <div class="result-stat-label">Tổng điểm</div>
+                    <div class="result-stat-value" id="finalScore">0</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-stat-label">Độ chính xác</div>
+                    <div class="result-stat-value" id="finalAccuracy">0%</div>
+                </div>
+                <div class="result-stat" style="display:none;">
+                    <div class="result-stat-label">Số lần thử</div>
+                    <div class="result-stat-value" id="totalAttempts">0</div>
+                </div>
+            </div>
+            <div style="font-size: clamp(1.1em, 3.5vw, 1.4em); margin-bottom: 10px; color: #4CAF50; font-weight: 600;" id="personalMessage"></div>
+            <div style="font-size: clamp(1em, 3vw, 1.3em); margin-bottom: 20px;" id="overallMessage"></div>
+
+            <div class="result-buttons">
+                <button class="result-btn reset-btn" id="modalResetBtn">🔄 Chơi lại</button>
+                <button class="result-btn back-to-selection-btn" id="modalBackToSelectionBtn">📚 Chọn bài khác</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration for practices and paths
+        const CONFIG = {
+            dataPath: 'data_pinyinPractice/', // Path to the directory containing lesson data
+            practices: [
+                { id: 'practice1', name: '📚 Luyện Tập 1' },
+                { id: 'practice2', name: '📚 Luyện Tập 2' },
+                { id: 'practice3', name: '📚 Luyện Tập 3 ' },
+                { id: 'practice4', name: '📚 Luyện Tập 4 ' },
+                { id: 'practice5', name: '📚 Luyện Tập 5 ' },
+                { id: 'practice6', name: '📚 Luyện Tập 6 ' },
+                { id: 'practice7', name: '📚 Luyện Tập 7 ' },
+                { id: 'practice8', name: '📚 Luyện Tập 8 ' },
+                { id: 'practice9', name: '📚 Luyện Tập 9 ' },
+                { id: 'practice10', name: '📚 Luyện Tập 10 ' },
+                { id: 'practice11', name: '📚 Luyện Tập 11 ' },
+                { id: 'practice12', name: '📚 Luyện Tập 12 ' },
+                { id: 'practice13', name: '📚 Luyện Tập 13 ' },
+                { id: 'practice14', name: '📚 Luyện Tập 14 ' },
+                { id: 'practice15', name: '📚 Luyện Tập 15 ' },
+                { id: 'practice16', name: '📚 Luyện Tập 16 ' }
+            ]
+        };
+
+        // Fallback demo data if file cannot be loaded
+        // Structure: chinese|pinyin|meaning
+        const demoData = {
+            practice1: `你好|nǐ hǎo|xin chào
+谢谢|xiè xiè|cảm ơn
+对不起|duì bu qǐ|xin lỗi
+再见|zài jiàn|tạm biệt
+没关系|méi guān xì|không sao
+请问|qǐng wèn|xin hỏi
+不客气|bú kè qì|không có gì
+多少钱|duō shǎo qián|bao nhiêu tiền
+明天见|míng tiān jiàn|hẹn gặp lại ngày mai`,
+            practice2: `八|bā|tám
+怕|pà|sợ
+马|mǎ|ngựa
+发|fā|phát
+那|nà|đó
+个|gè|cái
+可|kě|có thể
+天|tiān|trời
+不|bù|không
+对|duì|đúng
+有|yǒu|có
+会|huì|biết
+说|shuō|nói
+做|zuò|làm
+想|xiǎng|nghĩ`,
+            practice3: `门|mén|cửa
+问|wèn|hỏi
+很|hěn|rất
+跟|gēn|với
+什|shén|gì
+么|me|gì
+时|shí|thời
+候|hòu|lúc
+年|nián|năm
+月|yuè|tháng
+日|rì|ngày
+im|jīn|hôm
+明|míng|mai
+昨|zuó|hôm qua
+现|xiàn|hiện tại`
+        };
+
+        class PinyinGame {
+            constructor() {
+                this.allWords = []; // All words loaded from the file
+                this.practiceWords = []; // The 9 randomly selected words for the current practice session
+                
+                // Initialize game state variables
+                this.currentWordIndex = 0; // Index of the current word in the shuffled 'practiceWords' array
+                this.score = 0; // Player's score
+                this.correctAnswers = 0; // Number of correct answers
+                this.totalAttempts = 0; // Total attempts (number of pinyin cell selections)
+                this.gameStarted = false; // Game started state
+                this.isPlaying = false; // Playing state (waiting for user to select pinyin)
+                this.currentAudio = null; // Current Audio object
+                this.studentName = ''; // Student's name
+                this.currentPracticeId = ''; // Current practice ID
+                this.attemptCount = 0; // Number of times the game has been completed
+
+                // Display mode configuration
+                this.displayModes = ['pinyin', 'meaning', 'chinese'];
+                this.currentDisplayModeIndex = 0;
+                this.displayMode = this.displayModes[this.currentDisplayModeIndex]; // Current display mode
+
+                // Array to store data for the 9 pinyin cells on the grid. Each cell has pinyin and state (hidden/shown)
+                this.gridPinyinCellsData = []; 
+
+                // Initialize DOM elements
+                this.initializeElements();
+                // Set up event listeners
+                this.setupEventListeners();
+                // Initialize practice selection interface
+                this.initializePracticeSelector();
+                // Update initial display mode button text
+                this.updateDisplayModeButtonText();
+            }
+
+            /**
+             * Initializes references to DOM elements.
+             */
+            initializeElements() {
+                try {
+                    this.practiceSelector = document.getElementById('practice-selector');
+                    this.studentNameInput = document.getElementById('student-name');
+                    this.practiceDropdown = document.getElementById('practice-dropdown');
+                    this.loadBtn = document.getElementById('load-btn');
+                    this.loadingIndicator = document.getElementById('loading');
+                    this.errorDisplay = document.getElementById('error');
+                    this.practiceInfoDisplay = document.getElementById('practice-info');
+                    this.gameSection = document.getElementById('game-section');
+
+                    this.scoreElement = document.getElementById('score');
+                    this.progressElement = document.getElementById('progress');
+                    this.accuracyElement = document.getElementById('accuracy');
+                    this.progressFillElement = document.getElementById('progressFill');
+                    this.chineseTextDisplay = document.getElementById('chineseTextDisplay');
+                    this.meaningDisplay = document.getElementById('meaningDisplay');
+                    this.audioBtn = document.getElementById('audioBtn');
+                    this.audioStatus = document.getElementById('audio-status');
+                    this.pinyinGridElement = document.getElementById('pinyinGrid');
+                    this.startBtn = document.getElementById('startBtn');
+                    this.newGameBtn = document.getElementById('newGameBtn');
+                    this.toggleDisplayModeBtn = document.getElementById('toggleDisplayModeBtn'); // Mode toggle button
+                    
+                    this.resultModal = document.getElementById('resultModal');
+                    // Removed console.log for cleaner output, kept error check
+                    if (!this.resultModal) {
+                        console.error('Lỗi: Phần tử resultModal không tìm thấy!');
+                    }
+
+                    // Ensure resultModal is not null before querying its children
+                    if (this.resultModal) {
+                        this.resultTitle = this.resultModal.querySelector('.result-title span');
+                        // Removed console.log for cleaner output, kept error check
+                        if (!this.resultTitle) console.error('Lỗi: resultTitle không tìm thấy!');
+                        this.finalPracticeName = document.getElementById('finalPracticeName');
+                        if (!this.finalPracticeName) console.error('Lỗi: finalPracticeName không tìm thấy!');
+                        this.finalAttemptCount = document.getElementById('finalAttemptCount');
+                        if (!this.finalAttemptCount) console.error('Lỗi: finalAttemptCount không tìm thấy!');
+                        this.finalScore = document.getElementById('finalScore');
+                        if (!this.finalScore) console.error('Lỗi: finalScore không tìm thấy!');
+                        this.finalAccuracy = document.getElementById('finalAccuracy');
+                        if (!this.finalAccuracy) console.error('Lỗi: finalAccuracy không tìm thấy!');
+                        this.totalAttemptsModal = document.getElementById('totalAttempts');
+                        if (!this.totalAttemptsModal) console.error('Lỗi: totalAttemptsModal không tìm thấy!');
+                        this.personalMessage = document.getElementById('personalMessage');
+                        if (!this.personalMessage) console.error('Lỗi: personalMessage không tìm thấy!');
+                        this.overallMessage = document.getElementById('overallMessage');
+                        if (!this.overallMessage) console.error('Lỗi: overallMessage không tìm thấy!');
+                        this.modalResetBtn = document.getElementById('modalResetBtn');
+                        if (!this.modalResetBtn) console.error('Lỗi: modalResetBtn không tìm thấy!');
+                        this.modalBackToSelectionBtn = document.getElementById('modalBackToSelectionBtn');
+                        if (!this.modalBackToSelectionBtn) console.error('Lỗi: modalBackToSelectionBtn không tìm thấy!');
+                    } else {
+                        console.error('Lỗi: Không thể truy cập các phần tử con của resultModal vì resultModal là null.');
+                    }
+                } catch (e) {
+                    console.error('Lỗi trong quá trình khởi tạo phần tử DOM:', e);
+                }
+            }
+
+            /**
+             * Sets up event listeners for buttons and dropdown.
+             */
+            setupEventListeners() {
+                this.loadBtn.addEventListener('click', () => this.loadPractice());
+                this.startBtn.addEventListener('click', () => this.startGame());
+                this.newGameBtn.addEventListener('click', () => this.resetGame(true)); // Pass true to indicate direct restart
+                this.audioBtn.addEventListener('click', () => this.playCurrentWordAudio());
+                this.toggleDisplayModeBtn.addEventListener('click', () => this.toggleDisplayMode()); // Event for mode toggle button
+                
+                if (this.modalResetBtn) { // Check if elements exist before adding listeners
+                    this.modalResetBtn.addEventListener('click', () => this.resetGame(true)); // Pass true to indicate direct restart
+                } else {
+                    console.warn('Cảnh báo: modalResetBtn không tìm thấy.');
+                }
+                if (this.modalBackToSelectionBtn) {
+                    this.modalBackToSelectionBtn.addEventListener('click', () => this.backToSelection());
+                } else {
+                    console.warn('Cảnh báo: modalBackToSelectionBtn không tìm thấy.');
+                }
+
+                // Close modal when clicking outside modal content
+                if (this.resultModal) {
+                    this.resultModal.addEventListener('click', (e) => {
+                        if (e.target === this.resultModal) {
+                            this.resultModal.style.display = 'none';
+                            // Removed console.log for cleaner output
+                        }
+                    });
+                }
+            }
+
+            /**
+             * Initializes the practice selection interface: populates the dropdown.
+             */
+            initializePracticeSelector() {
+                this.practiceDropdown.innerHTML = '<option value="">Chọn bài luyện tập...</option>';
+                CONFIG.practices.forEach(practice => {
+                    const option = document.createElement('option');
+                    option.value = practice.id;
+                    option.textContent = practice.name;
+                    this.practiceDropdown.appendChild(option);
+                });
+                this.showElement(this.practiceSelector);
+                this.hideElement(this.gameSection);
+            }
+
+            /**
+             * Loads practice data from the file.
+             */
+            async loadPractice() {
+                this.studentName = this.studentNameInput.value.trim();
+                this.currentPracticeId = this.practiceDropdown.value;
+
+                // Validate student name
+                if (!this.studentName) {
+                    this.showError('Vui lòng nhập tên học sinh!');
+                    this.studentNameInput.classList.add('error');
+                    this.studentNameInput.focus();
+                    return;
+                }
+                this.studentNameInput.classList.remove('error');
+
+                // Validate practice selection
+                if (!this.currentPracticeId) {
+                    this.showError('Vui lòng chọn một bài luyện tập!');
+                    return;
+                }
+                
+                this.showLoading(true);
+                this.hideError();
+
+                try {
+                    let fileContent;
+                    let isUsingDemo = false;
+                    
+                    const txtPath = `${CONFIG.dataPath}${this.currentPracticeId}/${this.currentPracticeId}.txt`;
+                    
+                    try {
+                        const response = await fetch(txtPath);
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        fileContent = await response.text();
+                    } catch (error) {
+                        console.warn(`Không thể tải tệp từ ${txtPath}:`, error);
+                        if (demoData[this.currentPracticeId]) {
+                            fileContent = demoData[this.currentPracticeId];
+                            isUsingDemo = true;
+                        } else {
+                            throw new Error(`Không tìm thấy dữ liệu cho bài "${this.currentPracticeId}".`);
+                        }
+                    }
+
+                    if (isUsingDemo) {
+                        this.showError(`⚠️ Đang sử dụng dữ liệu demo cho bài "${this.currentPracticeId}". Để dùng file thật, hãy đặt file tại: ${txtPath}`);
+                        setTimeout(() => this.hideError(), 6000);
+                    }
+                    
+                    this.allWords = this.parsePracticeData(fileContent);
+
+                    if (this.allWords.length === 0) {
+                        throw new Error('Không tìm thấy từ hợp lệ trong file bài học!');
+                    }
+                    
+                    // Select 9 random words with unique pinyins for the practice session
+                    this.selectRandomPracticeWords(9);
+
+                    this.showPracticeInfo();
+                    this.showLoading(false);
+                    this.startBtn.disabled = false; // Enable Start button
+                    this.shufflePracticeWords(); // Shuffle practice words after selection
+                    this.prepareAndRenderInitialGrid(); // Prepare initial pinyin grid
+                    this.updateStats(); // Update initial stats
+                    this.chineseTextDisplay.textContent = 'Bấm "Bắt đầu"';
+                    this.meaningDisplay.textContent = 'để chơi';
+
+                } catch (error) {
+                    console.error('Lỗi khi tải bài luyện tập:', error);
+                    this.showError(error.message);
+                    this.showLoading(false);
+                    this.startBtn.disabled = true; // Disable Start button on error
+                }
+            }
+
+            /**
+             * Parses practice data from a text string.
+             * @param {string} dataString - Data string from the .txt file.
+             * @returns {Array<Object>} Array of word objects.
+             */
+            parsePracticeData(dataString) {
+                const lines = dataString.trim().split('\n');
+                const parsedWords = [];
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    
+                    const parts = line.split('|');
+                    // Expected structure: chinese|pinyin|meaning.
+                    if (parts.length >= 3) { 
+                        parsedWords.push({
+                            chinese: parts[0].trim(),
+                            pinyin: parts[1].trim(), // Get pinyin from the 2nd element
+                            meaning: parts[2].trim()
+                        });
+                    } else {
+                        console.warn(`Dòng ${i + 1} có định dạng không đúng: ${line}. Định dạng mong muốn: chinese|pinyin|meaning`);
+                    }
+                }
+                return parsedWords;
+            }
+
+            /**
+             * Selects a specified number of random words with unique pinyins for the practice session.
+             * @param {number} count - The number of words to select.
+             */
+            selectRandomPracticeWords(count) {
+                this.practiceWords = [];
+                const availableWords = [...this.allWords]; // Create a copy to modify
+                const selectedPinyins = new Set();
+
+                // Shuffle available words to ensure randomness
+                for (let i = availableWords.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [availableWords[i], availableWords[j]] = [availableWords[j], availableWords[i]];
+                }
+
+                for (let i = 0; i < availableWords.length && this.practiceWords.length < count; i++) {
+                    const word = availableWords[i];
+                    if (!selectedPinyins.has(word.pinyin)) {
+                        this.practiceWords.push(word);
+                        selectedPinyins.add(word.pinyin);
+                    }
+                }
+
+                // If not enough unique pinyins, fill with duplicates (though the request implies unique pinyins)
+                // This part ensures we always have 'count' words, even if pinyins are not strictly unique.
+                // For this specific request, we prioritize unique pinyins first.
+                // If there are fewer than 9 unique pinyins in the entire dataset, this will select all unique ones
+                // and then stop. If the user strictly needs 9 words, even if pinyins are duplicated,
+                // a different logic would be needed here.
+                // For now, it will select up to 'count' words with unique pinyins.
+                if (this.practiceWords.length < count) {
+                    console.warn(`Không thể tìm thấy ${count} từ có pinyin khác nhau. Đã chọn ${this.practiceWords.length} từ pinyin duy nhất.`);
+                    // If you *must* have 9 words, even with duplicate pinyins, you could add logic here
+                    // to pick remaining words randomly from 'allWords' without pinyin uniqueness check.
+                    // For this request, we'll stick to the unique pinyin requirement as much as possible.
+                }
+            }
+
+
+            /**
+             * Displays information about the selected practice.
+             */
+            showPracticeInfo() {
+                const practiceName = CONFIG.practices.find(p => p.id === this.currentPracticeId)?.name || this.currentPracticeId;
+                this.practiceInfoDisplay.innerHTML = `
+                    <strong>👨‍🎓 Học sinh: ${this.studentName}</strong><br>
+                    <strong>📚 ${practiceName}</strong><br>
+                    Số từ trong bài luyện tập: ${this.practiceWords.length}<br>
+                    <div class="action-buttons">
+                        <button class="action-btn start-game-btn" onclick="game.startGame()">
+                            🎯 Bắt đầu Game
+                        </button>
+                    </div>
+                `;
+                this.showElement(this.practiceInfoDisplay);
+            }
+
+            /**
+             * Shows/hides loading indicator.
+             * @param {boolean} show - True to show, False to hide.
+             */
+            showLoading(show) {
+                this.loadingIndicator.style.display = show ? 'block' : 'none';
+                this.loadBtn.disabled = show;
+                this.practiceDropdown.disabled = show;
+                this.studentNameInput.disabled = show;
+            }
+
+            /**
+             * Displays an error message.
+             * @param {string} message - Error content.
+             */
+            showError(message) {
+                this.errorDisplay.textContent = message;
+                this.errorDisplay.style.display = 'block';
+            }
+
+            /**
+             * Hides the error message.
+             */
+            hideError() {
+                this.errorDisplay.style.display = 'none';
+            }
+
+            /**
+             * Displays a DOM element.
+             * @param {HTMLElement} element - Element to display.
+             */
+            showElement(element) {
+                element.style.display = 'block';
+            }
+
+            /**
+             * Hides a DOM element.
+             * @param {HTMLElement} element - Element to hide.
+             */
+            hideElement(element) {
+                element.style.display = 'none';
+            }
+
+            /**
+             * Prepares data for the 9 initial pinyin cells and renders them.
+             * These cells will be fixed throughout the game.
+             */
+            prepareAndRenderInitialGrid() {
+                // Get unique pinyins from the selected 'practiceWords'
+                let uniquePinyinsFromPractice = Array.from(new Set(this.practiceWords.map(word => word.pinyin)));
+                
+                // Shuffle these unique pinyins
+                for (let i = uniquePinyinsFromPractice.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [uniquePinyinsFromPractice[i], uniquePinyinsFromPractice[j]] = [uniquePinyinsFromPractice[j], uniquePinyinsFromPractice[i]];
+                }
+
+                // Take the first 9 unique pinyins for the grid.
+                // If there are fewer than 9 unique pinyins in practiceWords, we'll use what we have.
+                const pinyinsForGrid = uniquePinyinsFromPractice.slice(0, 9);
+
+                // If less than 9 unique pinyins are available, fill the remaining spots with duplicates
+                // from the available unique pinyins to ensure 9 cells are always displayed.
+                while (pinyinsForGrid.length < 9 && uniquePinyinsFromPractice.length > 0) {
+                    pinyinsForGrid.push(uniquePinyinsFromPractice[Math.floor(Math.random() * uniquePinyinsFromPractice.length)]);
+                }
+                // If for some reason there are absolutely no pinyins, add placeholders
+                while (pinyinsForGrid.length < 9) {
+                     pinyinsForGrid.push(`pinyin${pinyinsForGrid.length + 1}`);
+                }
+
+
+                // Shuffle the grid pinyins one more time to randomize their display positions
+                for (let i = pinyinsForGrid.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [pinyinsForGrid[i], pinyinsForGrid[j]] = [pinyinsForGrid[j], pinyinsForGrid[i]];
+                }
+
+
+                this.gridPinyinCellsData = pinyinsForGrid.map(pinyin => ({
+                    pinyin: pinyin, // This is the pinyin string for the cell
+                    isHidden: false,
+                    isCorrect: false
+                }));
+
+                this.renderPinyinGrid();
+            }
+
+            /**
+             * Renders (or re-renders) the pinyin grid based on data in gridPinyinCellsData
+             * and the current display mode.
+             */
+            renderPinyinGrid() {
+                this.pinyinGridElement.innerHTML = ''; // Clear existing cells
+                this.gridPinyinCellsData.forEach((cellData, index) => {
+                    const cell = document.createElement('div');
+                    cell.className = 'pinyin-cell';
+                    
+                    if (cellData.isHidden) {
+                        cell.classList.add('hidden'); // Add 'hidden' class to completely hide the cell
+                    } else {
+                        let displayText = '';
+                        // Find a word in this.allWords that has the corresponding pinyin to get Chinese char and meaning
+                        // (only need to find 1 word, for display purposes)
+                        const correspondingWord = this.allWords.find(word => word.pinyin === cellData.pinyin);
+
+                        switch (this.displayMode) {
+                            case 'pinyin':
+                                displayText = cellData.pinyin;
+                                cell.style.fontFamily = 'Mulish, sans-serif'; // Ensure pinyin font
+                                cell.style.fontSize = '18px'; // Default font size
+                                break;
+                            case 'meaning':
+                                displayText = correspondingWord ? correspondingWord.meaning : 'N/A';
+                                cell.style.fontFamily = 'Mulish, sans-serif'; // Ensure Vietnamese font
+                                cell.style.fontSize = '16px'; // Smaller font size for meaning
+                                break;
+                            case 'chinese':
+                                displayText = correspondingWord ? correspondingWord.chinese : 'N/A';
+                                cell.style.fontFamily = 'Noto Sans SC, sans-serif'; // Apply Chinese font
+                                cell.style.fontSize = 'clamp(1.2em, 4vw, 2em)'; // Adjust font size for Chinese characters
+                                break;
+                            default:
+                                displayText = cellData.pinyin;
+                                cell.style.fontFamily = 'Mulish, sans-serif';
+                                cell.style.fontSize = '18px';
+                        }
+                        cell.textContent = displayText;
+                        // Only add event listener if the cell is not hidden
+                        cell.addEventListener('click', () => this.selectCell(index)); 
+                    }
+                    this.pinyinGridElement.appendChild(cell);
+                });
+            }
+
+            /**
+             * Starts the game.
+             */
+            startGame() {
+                if (this.practiceWords.length === 0) {
+                    this.showError('Chưa có dữ liệu bài học. Vui lòng chọn bài học trước.');
+                    return;
+                }
+
+                this.hideElement(this.practiceSelector);
+                this.showElement(this.gameSection);
+
+                this.gameStarted = true;
+                this.startBtn.style.display = 'none'; // Hide "Start" button
+                this.newGameBtn.style.display = 'none'; // Ensure "Play Again" button is also hidden
+                this.currentWordIndex = 0; // Reset word index to 0
+                this.score = 0;
+                this.correctAnswers = 0;
+                this.totalAttempts = 0;
+                
+                // Reset state of pinyin cells on the grid
+                this.gridPinyinCellsData.forEach(data => {
+                    data.isHidden = false;
+                    data.isCorrect = false;
+                });
+                this.renderPinyinGrid(); // Re-render grid to show all cells
+
+                this.updateStats(); // Update initial stats
+                this.playCurrentWord(); // Start playing the first word
+            }
+
+            /**
+             * Plays the current word.
+             * Gets the current word and plays its audio.
+             */
+            playCurrentWord() {
+                // Check if all words have been played, end game
+                if (this.currentWordIndex >= this.practiceWords.length) {
+                    this.endGame();
+                    return;
+                }
+
+                this.isPlaying = true; // Set playing state
+                const currentWord = this.practiceWords[this.currentWordIndex];
+                
+                // Reset font styles to default (Mulish) and remove specific classes first
+                this.chineseTextDisplay.style.fontFamily = 'Mulish, sans-serif';
+                this.chineseTextDisplay.style.fontSize = ''; // Reset to default clamped size from CSS
+                this.chineseTextDisplay.style.color = '#d32f2f'; // Default Chinese color
+                this.chineseTextDisplay.classList.remove('pinyin-font'); // Remove specific pinyin font class
+                
+                this.meaningDisplay.style.fontFamily = 'Mulish, sans-serif'; // Corrected line
+                this.meaningDisplay.style.fontSize = ''; // Reset to default clamped size from CSS
+                this.meaningDisplay.style.color = '#666'; // Default meaning color
+                this.meaningDisplay.style.fontStyle = 'italic'; // Default meaning style
+                this.meaningDisplay.classList.remove('pinyin-font'); // Remove specific pinyin font class
+
+                switch (this.displayMode) {
+                    case 'pinyin':
+                        // If grid displays Pinyin, current word section should display Chinese characters and Meaning
+                        this.chineseTextDisplay.textContent = currentWord.chinese;
+                        this.chineseTextDisplay.style.fontFamily = 'Noto Sans SC, sans-serif';
+                        this.chineseTextDisplay.style.fontSize = 'clamp(3em, 15vw, 5em)';
+                        this.meaningDisplay.textContent = currentWord.meaning;
+                        this.meaningDisplay.style.fontStyle = 'italic';
+                        break;
+                    case 'meaning':
+                        // If grid displays Meaning, current word section should display Chinese characters and Pinyin
+                        this.chineseTextDisplay.textContent = currentWord.chinese;
+                        this.chineseTextDisplay.style.fontFamily = 'Noto Sans SC, sans-serif';
+                        this.chineseTextDisplay.style.fontSize = 'clamp(3em, 15vw, 5em)';
+                        this.meaningDisplay.textContent = currentWord.pinyin;
+                        this.meaningDisplay.classList.add('pinyin-font');
+                        break;
+                    case 'chinese':
+                        // If grid displays Chinese characters, current word section should display Pinyin and Meaning
+                        this.chineseTextDisplay.textContent = currentWord.pinyin;
+                        this.chineseTextDisplay.classList.add('pinyin-font');
+                        this.meaningDisplay.textContent = currentWord.meaning;
+                        this.meaningDisplay.style.fontStyle = 'italic';
+                        break;
+                }
+                
+                // Play audio for the Chinese word (always plays Chinese characters)
+                this.playCurrentWordAudio();
+            }
+
+            /**
+             * Plays the audio for the current Chinese word.
+             * Prioritizes MP3 file, falls back to Web Speech API on error.
+             */
+            async playCurrentWordAudio() {
+                if (!this.gameStarted || !this.isPlaying) return;
+
+                const currentWord = this.practiceWords[this.currentWordIndex];
+                const audioFilePath = `${CONFIG.dataPath}${this.currentPracticeId}/mp3/${currentWord.chinese}.mp3`;
+
+                if (this.currentAudio) {
+                    this.currentAudio.pause();
+                    this.currentAudio.currentTime = 0;
+                }
+
+                this.audioBtn.classList.add('playing');
+                this.audioBtn.disabled = true;
+                this.audioBtn.classList.remove('error');
+                this.hideElement(this.audioStatus);
+
+                try {
+                    this.currentAudio = new Audio(audioFilePath);
+                    this.currentAudio.volume = 1.0;
+                    this.currentAudio.playbackRate = 0.8;
+
+                    this.currentAudio.onended = () => {
+                        this.audioBtn.classList.remove('playing');
+                        this.audioBtn.disabled = false;
+                    };
+
+                    this.currentAudio.onerror = (e) => {
+                        console.error('Lỗi tệp âm thanh:', e);
+                        this.audioBtn.classList.remove('playing');
+                        this.audioBtn.classList.add('error');
+                        this.audioBtn.disabled = false;
+                        //this.showAudioStatus('Không tìm thấy tệp âm thanh. Sử dụng giọng đọc tổng hợp.', 'error');
+                        this.speakText(currentWord.chinese); // Fallback to text-to-speech
+                    };
+
+                    await this.currentAudio.play();
+                } catch (error) {
+                    console.error('Lỗi khi phát âm thanh (khối catch):', error);
+                    this.audioBtn.classList.remove('playing');
+                    this.audioBtn.classList.add('error');
+                    this.audioBtn.disabled = false;
+                    //this.showAudioStatus('Lỗi khi phát âm thanh. Sử dụng giọng đọc tổng hợp.', 'error');
+                    this.speakText(currentWord.chinese); // Fallback to text-to-speech
+                }
+            }
+
+            /**
+             * Speaks text using the Web Speech API.
+             * @param {string} text - Text to speak.
+             */
+            speakText(text) {
+                if ('speechSynthesis' in window) {
+                    speechSynthesis.cancel(); // Stop any ongoing speech
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'zh-CN'; // Set language to Chinese
+                    utterance.rate = 0.8; // Speech rate
+                    utterance.pitch = 1; // Speech pitch
+                    speechSynthesis.speak(utterance);
+
+                    utterance.onend = () => {
+                        this.audioBtn.classList.remove('playing');
+                        this.audioBtn.disabled = false;
+                        this.audioBtn.classList.remove('error'); // Remove error state if TTS is successful
+                    };
+                    utterance.onerror = (e) => {
+                        console.error('Lỗi chuyển văn bản thành giọng nói:', e);
+                        this.audioBtn.classList.remove('playing');
+                        this.audioBtn.classList.add('error');
+                        this.audioBtn.disabled = false;
+                        //this.showAudioStatus('Không thể phát âm thanh tổng hợp.', 'error');
+                    };
+                } else {
+                    this.showAudioStatus('Trình duyệt không hỗ trợ Web Speech API.', 'error');
+                    this.audioBtn.classList.remove('playing');
+                    this.audioBtn.classList.add('error');
+                    this.audioBtn.disabled = false;
+                }
+            }
+
+            /**
+             * Displays audio status.
+             * @param {string} message - Message to display.
+             * @param {string} type - Status type ('info', 'error').
+             */
+            showAudioStatus(message, type) {
+                this.audioStatus.textContent = message;
+                this.audioStatus.className = `audio-status ${type}`;
+                this.showElement(this.audioStatus);
+                setTimeout(() => this.hideElement(this.audioStatus), 3000);
+            }
+
+            /**
+             * Handles user selection of a pinyin cell.
+             * @param {number} selectedIndex - Index of the pinyin cell selected by the user in gridPinyinCellsData array.
+             */
+            selectCell(selectedIndex) { 
+                // Ensure game is running and waiting for user selection
+                if (!this.gameStarted || !this.isPlaying) return;
+                
+                const selectedCellData = this.gridPinyinCellsData[selectedIndex];
+                const selectedCellElement = this.pinyinGridElement.children[selectedIndex];
+                
+                // If cell is already hidden, do nothing
+                if (selectedCellData.isHidden) return;
+
+                this.totalAttempts++;
+                
+                // Check if the selection is correct
+                if (selectedCellData.pinyin === this.practiceWords[this.currentWordIndex].pinyin) { 
+                    // If correct
+                    selectedCellElement.classList.add('correct'); // Add 'correct' class to change color
+                    this.score += 10; // Increase score
+                    this.correctAnswers++; // Increase correct answer count
+                    
+                    // Update data state for the cell to be hidden
+                    selectedCellData.isHidden = true;
+                    selectedCellData.isCorrect = true;
+
+                    // Disable all other pinyin cells to prevent double-clicking
+                    this.disablePinyinGrid(true);
+                    this.isPlaying = false; // Pause interaction
+
+                    // Wait a bit then update cell and move to next word
+                    setTimeout(() => {
+                        selectedCellElement.classList.remove('correct'); // Remove 'correct' class
+                        this.renderPinyinGrid(); // Re-render grid to update hidden state of cell
+                        this.currentWordIndex++; // Move to the next word in the practiceWords array
+                        this.disablePinyinGrid(false); // Re-enable grid
+                        this.playCurrentWord(); // Play new word
+                    }, 1000);
+                } else {
+                    // If incorrect
+                    selectedCellElement.classList.add('incorrect'); // Add 'incorrect' class to change color and shake
+                    // Only deduct points if current score is greater than 0
+                    if (this.score > 0) { 
+                        this.score = Math.max(0, this.score - 5); // Deduct 5 points but not below 0
+                    }
+                    // Remove 'incorrect' class after a delay
+                    setTimeout(() => {
+                        selectedCellElement.classList.remove('incorrect');
+                    }, 1000);
+                }
+                
+                // Update stats on the interface
+                this.updateStats();
+            }
+
+            /**
+             * Disables or enables the pinyin grid.
+             * @param {boolean} disable - True to disable, False to enable.
+             */
+            disablePinyinGrid(disable) {
+                const cells = this.pinyinGridElement.children;
+                for (let i = 0; i < cells.length; i++) {
+                    if (!this.gridPinyinCellsData[i].isHidden) { // Only disable cells that are not hidden
+                        if (disable) {
+                            cells[i].classList.add('disabled');
+                        } else {
+                            cells[i].classList.remove('disabled');
+                        }
+                    }
+                }
+            }
+
+            /**
+             * Updates statistics on the user interface.
+             */
+            updateStats() {
+                this.scoreElement.textContent = this.score;
+                this.progressElement.textContent = `${this.correctAnswers}/${this.practiceWords.length}`;
+                
+                // Calculate accuracy
+                const accuracy = this.totalAttempts > 0 ? 
+                    Math.round((this.correctAnswers / this.totalAttempts) * 100) : 0;
+                this.accuracyElement.textContent = `${accuracy}%`;
+                
+                // Update progress bar
+                const progressPercent = (this.correctAnswers / this.practiceWords.length) * 100;
+                this.progressFillElement.style.width = `${progressPercent}%`;
+            }
+
+            /**
+             * Toggles the display mode of pinyin cells (Pinyin, Meaning, Chinese).
+             */
+            toggleDisplayMode() {
+                this.currentDisplayModeIndex = (this.currentDisplayModeIndex + 1) % this.displayModes.length;
+                this.displayMode = this.displayModes[this.currentDisplayModeIndex];
+                this.updateDisplayModeButtonText();
+                this.renderPinyinGrid(); // Re-render grid with new mode
+                // Update current word display to reflect new mode
+                if (this.gameStarted && this.isPlaying) {
+                    this.playCurrentWord(); 
+                }
+            }
+
+            /**
+             * Updates the text of the mode toggle button.
+             */
+            updateDisplayModeButtonText() {
+                let buttonText = '';
+                switch (this.displayMode) {
+                    case 'pinyin':
+                        buttonText = 'Chế độ: Pinyin';
+                        break;
+                    case 'meaning':
+                        buttonText = 'Chế độ: Nghĩa';
+                        break;
+                    case 'chinese':
+                        buttonText = 'Chế độ: Chữ Hán';
+                        break;
+                }
+                this.toggleDisplayModeBtn.textContent = `👁️ ${buttonText}`;
+            }
+
+            /**
+             * Ends the game when all words are completed.
+             */
+            endGame() {
+                console.log('endGame() được gọi. Trò chơi đã kết thúc.');
+                this.gameStarted = false;
+                this.isPlaying = false;
+                this.chineseTextDisplay.textContent = 'Hoàn thành!';
+                this.meaningDisplay.textContent = 'Tuyệt vời!';
+                // Reset font styles for end game message
+                this.chineseTextDisplay.style.fontFamily = 'Mulish, sans-serif';
+                this.chineseTextDisplay.style.fontSize = ''; 
+                this.chineseTextDisplay.style.color = '#2c3e50'; 
+                this.chineseTextDisplay.classList.remove('pinyin-font');
+                this.meaningDisplay.style.fontFamily = 'Mulish, sans-serif'; // Corrected line
+                this.meaningDisplay.style.fontSize = ''; 
+                this.meaningDisplay.style.color = '#7f8c8d'; 
+                this.meaningDisplay.style.fontStyle = 'normal'; 
+                this.meaningDisplay.classList.remove('pinyin-font');
+
+                this.startBtn.style.display = 'none'; // Hide "Start" button
+                this.newGameBtn.style.display = 'inline-block'; // Show "Play Again" button
+                
+                if (this.currentAudio) {
+                    this.currentAudio.pause();
+                    this.currentAudio.currentTime = 0;
+                    this.currentAudio = null;
+                }
+
+                this.attemptCount++; // Increment game completion count
+                console.log('endGame: Số lần thử:', this.attemptCount);
+
+                // Show result modal
+                this.showResult();
+            }
+
+            /**
+             * Displays the final game result modal.
+             */
+            showResult() {
+                console.log('showResult() được gọi. Đang chuẩn bị hiển thị modal.');
+                if (!this.resultModal) {
+                    console.error('showResult: Lỗi: Không thể hiển thị modal kết quả vì phần tử resultModal là null. Vui lòng kiểm tra lại initializeElements().');
+                    return;
+                }
+                // console.log('showResult: resultModal đã được xác nhận là tồn tại.'); // Removed for cleaner output
+
+                const accuracy = this.totalAttempts > 0 ? 
+                    Math.round((this.correctAnswers / this.totalAttempts) * 100) : 0;
+                
+                if (this.resultTitle) {
+                    this.resultTitle.textContent = this.studentName;
+                    // console.log('showResult: resultTitle đã được cập nhật.'); // Removed for cleaner output
+                } else {
+                    console.error('showResult: resultTitle là null, không thể cập nhật.');
+                }
+
+                if (this.finalScore) {
+                    this.finalScore.textContent = this.score;
+                    // console.log('showResult: finalScore đã được cập nhật.'); // Removed for cleaner output
+                } else {
+                    console.error('showResult: finalScore là null, không thể cập nhật.');
+                }
+
+                if (this.finalAccuracy) {
+                    this.finalAccuracy.textContent = `${accuracy}%`;
+                    this.finalAccuracy.className = 'result-stat-value ' + 
+                        (accuracy >= 80 ? 'accuracy-high' : 
+                         accuracy >= 60 ? 'accuracy-medium' : 'accuracy-low');
+                    // console.log('showResult: finalAccuracy đã được cập nhật.'); // Removed for cleaner output
+                } else {
+                    console.error('showResult: finalAccuracy là null, không thể cập nhật.');
+                }
+                
+                if (this.totalAttemptsModal) {
+                    this.totalAttemptsModal.textContent = this.totalAttempts;
+                    // console.log('showResult: totalAttemptsModal đã được cập nhật.'); // Removed for cleaner output
+                } else {
+                    console.error('showResult: totalAttemptsModal là null, không thể cập nhật.');
+                }
+
+                if (this.finalAttemptCount) {
+                    this.finalAttemptCount.textContent = this.attemptCount;
+                    // console.log('showResult: finalAttemptCount đã được cập nhật.'); // Removed for cleaner output
+                } else {
+                    console.error('showResult: finalAttemptCount là null, không thể cập nhật.');
+                }
+
+                const practiceName = CONFIG.practices.find(p => p.id === this.currentPracticeId)?.name || this.currentPracticeId;
+                if (this.finalPracticeName) {
+                    this.finalPracticeName.textContent = practiceName;
+                    // console.log('showResult: finalPracticeName đã được cập nhật.'); // Removed for cleaner output
+                } else {
+                    console.error('showResult: finalPracticeName là null, không thể cập nhật.');
+                }
+                
+                let personalMsg = '';
+                let overallMsg = '';
+
+                if (accuracy >= 90) {
+                    personalMsg = `Chúc mừng ${this.studentName}! Kết quả xuất sắc!`;
+                    overallMsg = '🎉 Bạn đã thành thạo pinyin của bài này!';
+                } else if (accuracy >= 70) {
+                    personalMsg = `Tốt lắm ${this.studentName}! Bạn đang tiến bộ!`;
+                    overallMsg = '👍 Khá tốt! Hãy tiếp tục luyện tập để đạt điểm cao hơn!';
+                } else if (accuracy >= 50) {
+                    personalMsg = `${this.studentName}, hãy cố gắng thêm nhé!`;
+                    overallMsg = '📚 Cần cải thiện thêm. Hãy ôn tập và thử lại!';
+                } else {
+                    personalMsg = `${this.studentName}, đừng nản lòng!`;
+                    overallMsg = '💪 Cần luyện tập nhiều hơn. Hãy ôn tập kỹ và thử lại!';
+                }
+
+                if (this.personalMessage) {
+                    this.personalMessage.textContent = personalMsg;
+                    // console.log('showResult: personalMessage đã được cập nhật.'); // Removed for cleaner output
+                } else {
+                    console.error('showResult: personalMessage là null, không thể cập nhật.');
+                }
+
+                if (this.overallMessage) {
+                    this.overallMessage.textContent = overallMsg;
+                    // console.log('showResult: overallMessage đã được cập nhật.'); // Removed for cleaner output
+                } else {
+                    console.error('showResult: overallMessage là null, không thể cập nhật.');
+                }
+
+                this.resultModal.style.display = 'flex'; // Show modal
+                // console.log('showResult: Thuộc tính display của modal kết quả được đặt thành flex.'); // Removed for cleaner output
+                // console.log('showResult: Phần tử resultModal cuối cùng:', this.resultModal); // Removed for cleaner output
+            }
+
+            /**
+             * Resets the game to its initial state to play again.
+             * @param {boolean} directRestart - If true, starts the game immediately after reset.
+             */
+            resetGame(directRestart = false) {
+                if (this.resultModal) {
+                    this.resultModal.style.display = 'none'; // Hide result modal
+                    // console.log('resetGame: resultModal đã được ẩn.'); // Removed for cleaner output
+                } else {
+                    console.warn('resetGame: resultModal không tìm thấy, không thể ẩn.');
+                }
+                
+                this.currentWordIndex = 0;
+                this.score = 0;
+                this.correctAnswers = 0;
+                this.totalAttempts = 0;
+                this.gameStarted = false;
+                this.isPlaying = false;
+                
+                this.chineseTextDisplay.textContent = 'Bấm "Bắt đầu"';
+                this.meaningDisplay.textContent = 'để chơi';
+                // Reset font styles for initial message
+                this.chineseTextDisplay.style.fontFamily = 'Mulish, sans-serif';
+                this.chineseTextDisplay.style.fontSize = ''; 
+                this.chineseTextDisplay.style.color = '#2c3e50'; 
+                this.chineseTextDisplay.classList.remove('pinyin-font');
+                this.meaningDisplay.style.fontFamily = 'Mulish, sans-serif';
+                this.meaningDisplay.style.fontSize = ''; 
+                this.meaningDisplay.style.color = '#7f8c8d'; 
+                this.meaningDisplay.style.fontStyle = 'normal'; 
+                this.meaningDisplay.classList.remove('pinyin-font');
+
+                this.startBtn.style.display = 'inline-block'; // Show "Start" button
+                this.newGameBtn.style.display = 'none'; // Hide "Play Again" button
+                
+                this.shufflePracticeWords(); // Shuffle practice words for new game
+                this.prepareAndRenderInitialGrid(); // Prepare and re-render initial grid
+                this.updateStats(); // Update stats to 0
+
+                if (directRestart) {
+                    this.startGame(); // Start the game immediately
+                }
+            }
+
+            /**
+             * Returns to the practice selection screen.
+             */
+            backToSelection() {
+                if (this.resultModal) {
+                    this.resultModal.style.display = 'none'; // Hide result modal
+                    // console.log('backToSelection: resultModal đã được ẩn.'); // Removed for cleaner output
+                } else {
+                    console.warn('backToSelection: resultModal không tìm thấy, không thể ẩn.');
+                }
+                this.hideElement(this.gameSection);
+                this.showElement(this.practiceSelector);
+
+                // Reset game state completely
+                this.allWords = [];
+                this.practiceWords = [];
+                this.currentWordIndex = 0;
+                this.score = 0;
+                this.correctAnswers = 0;
+                this.totalAttempts = 0;
+                this.gameStarted = false;
+                this.isPlaying = false;
+                this.currentAudio = null;
+                this.studentName = '';
+                this.currentPracticeId = '';
+                this.attemptCount = 0;
+                this.gridPinyinCellsData = [];
+
+                this.studentNameInput.value = '';
+                this.practiceDropdown.value = '';
+                this.hideElement(this.practiceInfoDisplay);
+                this.hideError();
+                this.startBtn.disabled = true; // Disable Start button
+                this.chineseTextDisplay.textContent = 'Bấm "Tải Bài"';
+                this.meaningDisplay.textContent = 'để bắt đầu';
+                // Reset font styles for initial message
+                this.chineseTextDisplay.style.fontFamily = 'Mulish, sans-serif';
+                this.chineseTextDisplay.style.fontSize = ''; 
+                this.chineseTextDisplay.style.color = '#2c3e50'; 
+                this.chineseTextDisplay.classList.remove('pinyin-font');
+                this.meaningDisplay.style.fontFamily = 'Mulish, sans-serif';
+                this.meaningDisplay.style.fontSize = ''; 
+                this.meaningDisplay.style.color = '#7f8c8d'; 
+                this.meaningDisplay.style.fontStyle = 'normal'; 
+                this.meaningDisplay.classList.remove('pinyin-font');
+
+                this.updateStats(); // Update stats to 0
+                this.renderPinyinGrid(); // Clear pinyin grid
+            }
+
+            /**
+             * Randomly shuffles the order of words in the this.practiceWords array.
+             * Uses the Fisher-Yates shuffle algorithm.
+             */
+            shufflePracticeWords() {
+                for (let i = this.practiceWords.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [this.practiceWords[i], this.practiceWords[j]] = [this.practiceWords[j], this.practiceWords[i]];
+                }
+            }
+        }
+
+        // Initialize game when the web page is loaded
+        const game = new PinyinGame();
+
+        // Optimize for touch devices
+        function setupTouchOptimizations() {
+            const addTouchFeedback = (element) => {
+                element.addEventListener('touchstart', function() {
+                    this.style.opacity = '0.8';
+                }, { passive: true });
+                
+                element.addEventListener('touchend', function() {
+                    this.style.opacity = '1';
+                }, { passive: true });
+                
+                element.addEventListener('touchcancel', function() {
+                    this.style.opacity = '1';
+                }, { passive: true });
+            };
+
+            document.querySelectorAll('button, .pinyin-cell').forEach(addTouchFeedback);
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            game.initializePracticeSelector(); // Ensure dropdown is populated on page load
+            setupTouchOptimizations();
+        });
+
+        // Cleanup when page unloads
+        window.addEventListener('beforeunload', function() {
+            if (game.currentAudio) {
+                game.currentAudio.pause();
+            }
+        });
+
+        // Handle orientation change
+        window.addEventListener('orientationchange', function() {
+            setTimeout(() => {
+                window.scrollTo(0, 0);
+            }, 100);
+        });
+    </script>
+</body>
+</html>

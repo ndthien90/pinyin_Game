@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luyện Tập Pinyin</title>
+    <style>
+        /* Đặt lại CSS cơ bản */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Kiểu dáng body */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Kiểu dáng container chính */
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Kiểu dáng phần header */
+        .header {
+            margin-bottom: 30px;
+        }
+
+        /* Tiêu đề chính */
+        .title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        /* Tiêu đề phụ */
+        .subtitle {
+            font-size: 16px;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+
+        /* Kiểu dáng phần thống kê */
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+        }
+
+        /* Mỗi mục thống kê */
+        .stat-item {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 12px;
+            border-left: 4px solid #3498db;
+        }
+
+        /* Nhãn của mục thống kê */
+        .stat-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Giá trị của mục thống kê */
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-top: 5px;
+        }
+
+        /* Khu vực chơi game */
+        .game-area {
+            margin-bottom: 30px;
+        }
+
+        /* Từ hiện tại hiển thị */
+        .current-word {
+            background: #e8f4fd;
+            border: 2px solid #3498db;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        /* Nhãn từ hiện tại */
+        .current-word-label {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        /* Hiển thị từ hiện tại */
+        .current-word-display {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        /* Lưới pinyin */
+        .pinyin-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        /* Ô pinyin */
+        .pinyin-cell {
+            background: #ffffff;
+            border: 2px solid #ecf0f1;
+            border-radius: 12px;
+            padding: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Hiệu ứng hover cho ô pinyin */
+        .pinyin-cell:hover {
+            border-color: #3498db;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.2);
+        }
+
+        /* Kiểu dáng cho ô pinyin đúng */
+        .pinyin-cell.correct {
+            background: #d5f4e6;
+            border-color: #27ae60;
+            color: #27ae60;
+        }
+
+        /* Kiểu dáng cho ô pinyin sai */
+        .pinyin-cell.incorrect {
+            background: #ffeaea;
+            border-color: #e74c3c;
+            color: #e74c3c;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        /* Kiểu dáng cho ô pinyin bị ẩn (thực ra là bị vô hiệu hóa và hiển thị dấu tích) */
+        .pinyin-cell.hidden {
+            background: #f8f9fa;
+            border-color: #bdc3c7;
+            color: #bdc3c7;
+            cursor: not-allowed;
+            pointer-events: none; 
+        }
+
+        /* Kiểu dáng cho ô pinyin bị vô hiệu hóa */
+        .pinyin-cell.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Keyframe cho hiệu ứng rung lắc */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* Khu vực điều khiển (nút bấm) */
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        /* Kiểu dáng nút bấm chung */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Nút chính */
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        /* Nút phụ */
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+            transform: translateY(-2px);
+        }
+
+        /* Nút thành công */
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+            transform: translateY(-2px);
+        }
+
+        /* Thanh tiến độ */
+        .progress-bar {
+            background: #ecf0f1;
+            height: 8px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        /* Thanh tiến độ đầy */
+        .progress-fill {
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* Modal kết quả */
+        .result-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none; /* Mặc định ẩn */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        /* Nội dung modal kết quả */
+        .result-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        /* Tiêu đề modal kết quả */
+        .result-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        /* Thống kê trong modal kết quả */
+        .result-stats {
+            margin-bottom: 30px;
+        }
+
+        /* Mỗi mục thống kê trong modal */
+        .result-stat {
+            margin-bottom: 15px;
+        }
+
+        /* Nhãn thống kê trong modal */
+        .result-stat-label {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+
+        /* Giá trị thống kê trong modal */
+        .result-stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #3498db;
+        }
+
+        /* Màu sắc độ chính xác cao */
+        .accuracy-high { color: #27ae60; }
+        /* Màu sắc độ chính xác trung bình */
+        .accuracy-medium { color: #f39c12; }
+        /* Màu sắc độ chính xác thấp */
+        .accuracy-low { color: #e74c3c; }
+
+        /* Media queries cho thiết bị di động */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .pinyin-cell {
+                padding: 15px;
+                font-size: 16px;
+                min-height: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">Luyện Tập Pinyin</h1>
+            <p class="subtitle">Nghe và chọn pinyin đúng</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-label">Điểm số</div>
+                <div class="stat-value" id="score">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Tiến độ</div>
+                <div class="stat-value" id="progress">0/9</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Độ chính xác</div>
+                <div class="stat-value" id="accuracy">100%</div>
+            </div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="game-area">
+            <div class="current-word">
+                <div class="current-word-label">Từ hiện tại:</div>
+                <div class="current-word-display" id="currentWord">Bấm "Bắt đầu" để chơi</div>
+            </div>
+
+            <div class="pinyin-grid" id="pinyinGrid">
+                <!-- Các ô pinyin sẽ được tạo bằng JavaScript -->
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" id="startBtn">Bắt đầu</button>
+            <button class="btn btn-secondary" id="repeatBtn" disabled>Phát lại</button>
+            <button class="btn btn-success" id="newGameBtn" style="display: none;">Chơi lại</button>
+        </div>
+    </div>
+
+    <!-- Modal kết quả -->
+    <div class="result-modal" id="resultModal">
+        <div class="result-content">
+            <h2 class="result-title">Kết quả luyện tập</h2>
+            <div class="result-stats">
+                <div class="result-stat">
+                    <div class="result-stat-label">Tổng điểm</div>
+                    <div class="result-stat-value" id="finalScore">0</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-stat-label">Độ chính xác</div>
+                    <div class="result-stat-value" id="finalAccuracy">0%</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-stat-label">Số lần thử</div>
+                    <div class="result-stat-value" id="totalAttempts">0</div>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="closeResult()">Đóng</button>
+        </div>
+    </div>
+
+    <script>
+        class PinyinGame {
+            constructor() {
+                // Danh sách các từ Pinyin để luyện tập
+                this.words = [
+                    { chinese: '你好', pinyin: 'nǐ hǎo', meaning: 'xin chào' },
+                    { chinese: '谢谢', pinyin: 'xiè xiè', meaning: 'cảm ơn' },
+                    { chinese: '对不起', pinyin: 'duì bu qǐ', meaning: 'xin lỗi' },
+                    { chinese: '再见', pinyin: 'zài jiàn', meaning: 'tạm biệt' },
+                    { chinese: '没关系', pinyin: 'méi guān xì', meaning: 'không sao' },
+                    { chinese: '请问', pinyin: 'qǐng wèn', meaning: 'xin hỏi' },
+                    { chinese: '不客气', pinyin: 'bú kè qì', meaning: 'không có gì' },
+                    { chinese: '多少钱', pinyin: 'duō shǎo qián', meaning: 'bao nhiêu tiền' },
+                    { chinese: '明天见', pinyin: 'míng tiān jiàn', meaning: 'hẹn gặp lại ngày mai' }
+                ];
+                
+                // Trộn ngẫu nhiên thứ tự các từ trong game
+                this.shuffleWords(); 
+
+                // Khởi tạo các biến trạng thái game
+                this.currentWordIndex = 0; // Chỉ số của từ hiện tại trong mảng words đã xáo trộn
+                this.score = 0; // Điểm số của người chơi
+                this.correctAnswers = 0; // Số câu trả lời đúng
+                this.totalAttempts = 0; // Tổng số lần thử
+                this.gameStarted = false; // Trạng thái game đã bắt đầu hay chưa
+                this.isPlaying = false; // Trạng thái đang chơi (đang chờ người dùng chọn pinyin)
+                
+                // Mảng lưu trữ dữ liệu cho 9 ô pinyin trên lưới. Mỗi ô có pinyin và trạng thái (ẩn/hiện)
+                this.gridPinyinCellsData = []; 
+
+                // Khởi tạo các phần tử DOM
+                this.initializeElements();
+                // Thiết lập các sự kiện lắng nghe
+                this.setupEventListeners();
+                // Chuẩn bị và render lưới pinyin ban đầu
+                this.prepareAndRenderInitialGrid(); 
+            }
+
+            /**
+             * Khởi tạo các tham chiếu đến các phần tử DOM.
+             */
+            initializeElements() {
+                this.scoreElement = document.getElementById('score');
+                this.progressElement = document.getElementById('progress');
+                this.accuracyElement = document.getElementById('accuracy');
+                this.progressFillElement = document.getElementById('progressFill');
+                this.currentWordElement = document.getElementById('currentWord');
+                this.pinyinGridElement = document.getElementById('pinyinGrid');
+                this.startBtn = document.getElementById('startBtn');
+                this.repeatBtn = document.getElementById('repeatBtn');
+                this.newGameBtn = document.getElementById('newGameBtn');
+                this.resultModal = document.getElementById('resultModal');
+            }
+
+            /**
+             * Thiết lập các sự kiện lắng nghe cho các nút bấm.
+             */
+            setupEventListeners() {
+                this.startBtn.addEventListener('click', () => this.startGame());
+                this.repeatBtn.addEventListener('click', () => this.playCurrentWord());
+                this.newGameBtn.addEventListener('click', () => this.resetGame());
+            }
+
+            /**
+             * Chuẩn bị dữ liệu cho 9 ô pinyin ban đầu và render chúng.
+             * Các ô này sẽ cố định trong suốt trò chơi.
+             */
+            prepareAndRenderInitialGrid() {
+                // Lấy tất cả các pinyin duy nhất từ danh sách từ
+                let allUniquePinyin = Array.from(new Set(this.words.map(word => word.pinyin)));
+                
+                // Đảm bảo có đủ 9 pinyin. Nếu ít hơn, có thể lặp lại hoặc thêm pinyin giả.
+                // Hiện tại, chúng ta giả định có ít nhất 9 từ với pinyin duy nhất.
+                // Nếu không đủ, bạn có thể điều chỉnh logic này.
+                while (allUniquePinyin.length < 9) {
+                    // Thêm pinyin ngẫu nhiên từ danh sách hiện có để đủ 9 ô
+                    const randomIndex = Math.floor(Math.random() * this.words.length);
+                    allUniquePinyin.push(this.words[randomIndex].pinyin);
+                    allUniquePinyin = Array.from(new Set(allUniquePinyin)); // Đảm bảo vẫn duy nhất
+                }
+
+                // Xáo trộn các pinyin này để tạo lưới ban đầu
+                for (let i = allUniquePinyin.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [allUniquePinyin[i], allUniquePinyin[j]] = [allUniquePinyin[j], allUniquePinyin[i]];
+                }
+
+                // Giới hạn 9 ô đầu tiên nếu có nhiều hơn 9 pinyin duy nhất
+                this.gridPinyinCellsData = allUniquePinyin.slice(0, 9).map(pinyin => ({
+                    pinyin: pinyin,
+                    isHidden: false,
+                    isCorrect: false // Để theo dõi trạng thái đúng
+                }));
+
+                this.renderPinyinGrid();
+            }
+
+            /**
+             * Render (hoặc render lại) lưới pinyin dựa trên dữ liệu trong gridPinyinCellsData.
+             */
+            renderPinyinGrid() {
+                this.pinyinGridElement.innerHTML = ''; // Xóa các ô hiện có
+                this.gridPinyinCellsData.forEach((cellData, index) => {
+                    const cell = document.createElement('div');
+                    cell.className = 'pinyin-cell';
+                    
+                    if (cellData.isHidden) {
+                        cell.classList.add('hidden');
+                        cell.textContent = '✓'; // Hiển thị dấu tích khi ẩn
+                    } else {
+                        cell.textContent = cellData.pinyin;
+                        // Chỉ thêm event listener nếu ô chưa bị ẩn
+                        cell.addEventListener('click', () => this.selectCell(index)); 
+                    }
+                    this.pinyinGridElement.appendChild(cell);
+                });
+            }
+
+            /**
+             * Bắt đầu trò chơi.
+             */
+            startGame() {
+                this.gameStarted = true;
+                this.startBtn.disabled = true;
+                this.repeatBtn.disabled = false;
+                this.currentWordIndex = 0; // Đặt lại chỉ số từ về 0
+                this.score = 0;
+                this.correctAnswers = 0;
+                this.totalAttempts = 0;
+                
+                // Reset trạng thái của các ô pinyin trên lưới
+                this.gridPinyinCellsData.forEach(data => {
+                    data.isHidden = false;
+                    data.isCorrect = false;
+                });
+                this.renderPinyinGrid(); // Render lại lưới để hiển thị tất cả các ô
+
+                this.updateStats(); // Cập nhật thống kê ban đầu
+                this.playCurrentWord(); // Bắt đầu chơi từ đầu tiên
+            }
+
+            /**
+             * Phát từ hiện tại.
+             * Lấy từ hiện tại và phát âm.
+             */
+            playCurrentWord() {
+                // Kiểm tra nếu đã hết từ, kết thúc game
+                if (this.currentWordIndex >= this.words.length) {
+                    this.endGame();
+                    return;
+                }
+
+                this.isPlaying = true; // Đặt trạng thái đang chơi
+                const currentWord = this.words[this.currentWordIndex];
+                this.currentWordElement.textContent = `${currentWord.chinese} - ${currentWord.meaning}`;
+                
+                // Phát âm từ tiếng Trung
+                this.speak(currentWord.chinese);
+            }
+
+            /**
+             * Phát âm văn bản sử dụng Web Speech API.
+             * @param {string} text - Văn bản cần phát âm.
+             */
+            speak(text) {
+                if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'zh-CN'; // Đặt ngôn ngữ là tiếng Trung
+                    utterance.rate = 0.8; // Tốc độ phát âm
+                    utterance.pitch = 1; // Cao độ phát âm
+                    speechSynthesis.speak(utterance);
+                }
+            }
+
+            /**
+             * Xử lý khi người dùng chọn một ô pinyin.
+             * @param {number} selectedIndex - Chỉ số của ô pinyin được người dùng chọn trong mảng gridPinyinCellsData.
+             */
+            selectCell(selectedIndex) { 
+                // Đảm bảo game đang chạy và đang chờ người dùng chọn
+                if (!this.gameStarted || !this.isPlaying) return;
+                
+                const selectedCellData = this.gridPinyinCellsData[selectedIndex];
+                const selectedCellElement = this.pinyinGridElement.children[selectedIndex];
+                
+                // Nếu ô đã bị ẩn, không làm gì cả
+                if (selectedCellData.isHidden) return;
+
+                this.totalAttempts++;
+                
+                // Kiểm tra xem lựa chọn có đúng không
+                if (selectedCellData.pinyin === this.words[this.currentWordIndex].pinyin) { 
+                    // Nếu đúng
+                    selectedCellElement.classList.add('correct'); // Thêm lớp 'correct' để đổi màu
+                    this.score += 10; // Tăng điểm
+                    this.correctAnswers++; // Tăng số câu trả lời đúng
+                    
+                    // Cập nhật trạng thái trong dữ liệu
+                    selectedCellData.isHidden = true;
+                    selectedCellData.isCorrect = true;
+
+                    // Chờ một chút rồi cập nhật lại ô và chuyển sang từ tiếp theo
+                    setTimeout(() => {
+                        selectedCellElement.classList.remove('correct'); // Bỏ lớp 'correct'
+                        this.renderPinyinGrid(); // Render lại lưới để cập nhật trạng thái ẩn của ô
+                        this.currentWordIndex++; // Chuyển sang từ tiếp theo trong mảng words
+                        this.playCurrentWord(); // Phát từ mới
+                    }, 1000);
+                } else {
+                    // Nếu sai
+                    selectedCellElement.classList.add('incorrect'); // Thêm lớp 'incorrect' để đổi màu và rung lắc
+                    // Xóa lớp 'incorrect' sau một khoảng thời gian
+                    setTimeout(() => {
+                        selectedCellElement.classList.remove('incorrect');
+                    }, 1000);
+                }
+                
+                // Cập nhật các chỉ số thống kê trên giao diện
+                this.updateStats();
+            }
+
+            /**
+             * Cập nhật các chỉ số thống kê trên giao diện người dùng.
+             */
+            updateStats() {
+                this.scoreElement.textContent = this.score;
+                this.progressElement.textContent = `${this.correctAnswers}/${this.words.length}`;
+                
+                // Tính toán độ chính xác
+                const accuracy = this.totalAttempts > 0 ? 
+                    Math.round((this.correctAnswers / this.totalAttempts) * 100) : 100;
+                this.accuracyElement.textContent = `${accuracy}%`;
+                
+                // Cập nhật thanh tiến độ
+                const progressPercent = (this.correctAnswers / this.words.length) * 100;
+                this.progressFillElement.style.width = `${progressPercent}%`;
+            }
+
+            /**
+             * Kết thúc trò chơi khi đã hoàn thành tất cả các từ.
+             */
+            endGame() {
+                this.gameStarted = false;
+                this.isPlaying = false;
+                this.currentWordElement.textContent = 'Hoàn thành!';
+                this.repeatBtn.disabled = true;
+                this.newGameBtn.style.display = 'inline-block'; // Hiển thị nút "Chơi lại"
+                
+                // Hiển thị modal kết quả
+                this.showResult();
+            }
+
+            /**
+             * Hiển thị modal kết quả cuối cùng của trò chơi.
+             */
+            showResult() {
+                const accuracy = this.totalAttempts > 0 ? 
+                    Math.round((this.correctAnswers / this.totalAttempts) * 100) : 100;
+                
+                document.getElementById('finalScore').textContent = this.score;
+                document.getElementById('finalAccuracy').textContent = `${accuracy}%`;
+                document.getElementById('totalAttempts').textContent = this.totalAttempts;
+                
+                // Thay đổi màu sắc độ chính xác dựa trên giá trị
+                const accuracyElement = document.getElementById('finalAccuracy');
+                accuracyElement.className = 'result-stat-value ' + 
+                    (accuracy >= 80 ? 'accuracy-high' : 
+                     accuracy >= 60 ? 'accuracy-medium' : 'accuracy-low');
+                
+                this.resultModal.style.display = 'flex'; // Hiển thị modal
+            }
+
+            /**
+             * Đặt lại trò chơi về trạng thái ban đầu để chơi lại.
+             */
+            resetGame() {
+                this.currentWordIndex = 0;
+                this.score = 0;
+                this.correctAnswers = 0;
+                this.totalAttempts = 0;
+                this.gameStarted = false;
+                this.isPlaying = false;
+                
+                this.currentWordElement.textContent = 'Bấm "Bắt đầu" để chơi';
+                this.startBtn.disabled = false;
+                this.repeatBtn.disabled = true;
+                this.newGameBtn.style.display = 'none';
+                
+                this.shuffleWords(); // Trộn lại thứ tự từ cho game mới
+                this.prepareAndRenderInitialGrid(); // Chuẩn bị và render lại lưới ban đầu
+                this.updateStats(); // Cập nhật thống kê về 0
+            }
+
+            /**
+             * Xáo trộn ngẫu nhiên thứ tự các từ trong mảng this.words.
+             * Sử dụng thuật toán Fisher-Yates shuffle.
+             */
+            shuffleWords() {
+                for (let i = this.words.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [this.words[i], this.words[j]] = [this.words[j], this.words[i]];
+                }
+            }
+        }
+
+        // Khởi tạo game khi trang web được tải
+        const game = new PinyinGame();
+
+        /**
+         * Hàm đóng modal kết quả.
+         */
+        function closeResult() {
+            document.getElementById('resultModal').style.display = 'none';
+        }
+
+        // Đóng modal khi click ra bên ngoài nội dung modal
+        document.getElementById('resultModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeResult();
+            }
+        });
+    </script>
+</body>
+</html>

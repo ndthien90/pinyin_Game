@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luyện Tập Pinyin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 30px;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+        }
+
+        .stat-item {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 12px;
+            border-left: 4px solid #3498db;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-top: 5px;
+        }
+
+        .game-area {
+            margin-bottom: 30px;
+        }
+
+        .current-word {
+            background: #e8f4fd;
+            border: 2px solid #3498db;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .current-word-label {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        .current-word-display {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .pinyin-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .pinyin-cell {
+            background: #ffffff;
+            border: 2px solid #ecf0f1;
+            border-radius: 12px;
+            padding: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pinyin-cell:hover {
+            border-color: #3498db;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.2);
+        }
+
+        .pinyin-cell.correct {
+            background: #d5f4e6;
+            border-color: #27ae60;
+            color: #27ae60;
+        }
+
+        .pinyin-cell.incorrect {
+            background: #ffeaea;
+            border-color: #e74c3c;
+            color: #e74c3c;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        .pinyin-cell.hidden {
+            background: #f8f9fa;
+            border-color: #bdc3c7;
+            color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .pinyin-cell.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+            transform: translateY(-2px);
+        }
+
+        .progress-bar {
+            background: #ecf0f1;
+            height: 8px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .result-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .result-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .result-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .result-stats {
+            margin-bottom: 30px;
+        }
+
+        .result-stat {
+            margin-bottom: 15px;
+        }
+
+        .result-stat-label {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+
+        .result-stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #3498db;
+        }
+
+        .accuracy-high { color: #27ae60; }
+        .accuracy-medium { color: #f39c12; }
+        .accuracy-low { color: #e74c3c; }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .pinyin-cell {
+                padding: 15px;
+                font-size: 16px;
+                min-height: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">Luyện Tập Pinyin</h1>
+            <p class="subtitle">Nghe và chọn pinyin đúng</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-label">Điểm số</div>
+                <div class="stat-value" id="score">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Tiến độ</div>
+                <div class="stat-value" id="progress">0/9</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Độ chính xác</div>
+                <div class="stat-value" id="accuracy">100%</div>
+            </div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="game-area">
+            <div class="current-word">
+                <div class="current-word-label">Từ hiện tại:</div>
+                <div class="current-word-display" id="currentWord">Bấm "Bắt đầu" để chơi</div>
+            </div>
+
+            <div class="pinyin-grid" id="pinyinGrid">
+                <!-- Các ô pinyin sẽ được tạo bằng JavaScript -->
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" id="startBtn">Bắt đầu</button>
+            <button class="btn btn-secondary" id="repeatBtn" disabled>Phát lại</button>
+            <button class="btn btn-success" id="newGameBtn" style="display: none;">Chơi lại</button>
+        </div>
+    </div>
+
+    <!-- Modal kết quả -->
+    <div class="result-modal" id="resultModal">
+        <div class="result-content">
+            <h2 class="result-title">Kết quả luyện tập</h2>
+            <div class="result-stats">
+                <div class="result-stat">
+                    <div class="result-stat-label">Tổng điểm</div>
+                    <div class="result-stat-value" id="finalScore">0</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-stat-label">Độ chính xác</div>
+                    <div class="result-stat-value" id="finalAccuracy">0%</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-stat-label">Số lần thử</div>
+                    <div class="result-stat-value" id="totalAttempts">0</div>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="closeResult()">Đóng</button>
+        </div>
+    </div>
+
+    <script>
+        class PinyinGame {
+            constructor() {
+                this.words = [
+                    { chinese: '你好', pinyin: 'nǐ hǎo', meaning: 'xin chào' },
+                    { chinese: '谢谢', pinyin: 'xiè xiè', meaning: 'cảm ơn' },
+                    { chinese: '对不起', pinyin: 'duì bu qǐ', meaning: 'xin lỗi' },
+                    { chinese: '再见', pinyin: 'zài jiàn', meaning: 'tạm biệt' },
+                    { chinese: '没关系', pinyin: 'méi guān xì', meaning: 'không sao' },
+                    { chinese: '请问', pinyin: 'qǐng wèn', meaning: 'xin hỏi' },
+                    { chinese: '不客气', pinyin: 'bú kè qì', meaning: 'không có gì' },
+                    { chinese: '多少钱', pinyin: 'duō shǎo qián', meaning: 'bao nhiêu tiền' },
+                    { chinese: '明天见', pinyin: 'míng tiān jiàn', meaning: 'hẹn gặp lại ngày mai' }
+                ];
+                
+                this.currentWordIndex = 0;
+                this.score = 0;
+                this.correctAnswers = 0;
+                this.totalAttempts = 0;
+                this.gameStarted = false;
+                this.isPlaying = false;
+                
+                this.initializeElements();
+                this.setupEventListeners();
+                this.initializeGrid();
+            }
+
+            initializeElements() {
+                this.scoreElement = document.getElementById('score');
+                this.progressElement = document.getElementById('progress');
+                this.accuracyElement = document.getElementById('accuracy');
+                this.progressFillElement = document.getElementById('progressFill');
+                this.currentWordElement = document.getElementById('currentWord');
+                this.pinyinGridElement = document.getElementById('pinyinGrid');
+                this.startBtn = document.getElementById('startBtn');
+                this.repeatBtn = document.getElementById('repeatBtn');
+                this.newGameBtn = document.getElementById('newGameBtn');
+                this.resultModal = document.getElementById('resultModal');
+            }
+
+            setupEventListeners() {
+                this.startBtn.addEventListener('click', () => this.startGame());
+                this.repeatBtn.addEventListener('click', () => this.playCurrentWord());
+                this.newGameBtn.addEventListener('click', () => this.resetGame());
+            }
+
+            initializeGrid() {
+                this.pinyinGridElement.innerHTML = '';
+                
+                // Tạo mảng chỉ số và shuffle để sắp xếp ngẫu nhiên
+                this.gridOrder = Array.from({length: this.words.length}, (_, i) => i);
+                this.shuffleArray(this.gridOrder);
+                
+                this.gridOrder.forEach((wordIndex) => {
+                    const cell = document.createElement('div');
+                    cell.className = 'pinyin-cell';
+                    cell.textContent = this.words[wordIndex].pinyin;
+                    cell.dataset.wordIndex = wordIndex; // Lưu chỉ số thật của từ
+                    cell.addEventListener('click', () => this.selectCell(wordIndex));
+                    this.pinyinGridElement.appendChild(cell);
+                });
+            }
+
+            shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+
+            startGame() {
+                this.gameStarted = true;
+                this.startBtn.disabled = true;
+                this.repeatBtn.disabled = false;
+                this.currentWordIndex = 0;
+                this.playCurrentWord();
+            }
+
+            playCurrentWord() {
+                if (this.currentWordIndex >= this.words.length) {
+                    this.endGame();
+                    return;
+                }
+
+                this.isPlaying = true;
+                const currentWord = this.words[this.currentWordIndex];
+                this.currentWordElement.textContent = `${currentWord.chinese} - ${currentWord.meaning}`;
+                
+                // Sử dụng Web Speech API để phát âm
+                this.speak(currentWord.chinese);
+            }
+
+            speak(text) {
+                if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'zh-CN';
+                    utterance.rate = 0.8;
+                    utterance.pitch = 1;
+                    speechSynthesis.speak(utterance);
+                }
+            }
+
+            selectCell(index) {
+                if (!this.gameStarted || !this.isPlaying) return;
+                
+                const cells = this.pinyinGridElement.children;
+                const selectedCell = cells[index];
+                
+                if (selectedCell.classList.contains('hidden')) return;
+
+                this.totalAttempts++;
+                
+                if (index === this.currentWordIndex) {
+                    // Đúng
+                    selectedCell.classList.add('correct');
+                    setTimeout(() => {
+                        selectedCell.classList.add('hidden');
+                        selectedCell.textContent = '✓';
+                    }, 1000);
+                    
+                    this.score += 10;
+                    this.correctAnswers++;
+                    this.currentWordIndex++;
+                    
+                    setTimeout(() => {
+                        this.playCurrentWord();
+                    }, 1500);
+                } else {
+                    // Sai
+                    selectedCell.classList.add('incorrect');
+                    setTimeout(() => {
+                        selectedCell.classList.remove('incorrect');
+                    }, 1000);
+                }
+                
+                this.updateStats();
+            }
+
+            updateStats() {
+                this.scoreElement.textContent = this.score;
+                this.progressElement.textContent = `${this.correctAnswers}/9`;
+                
+                const accuracy = this.totalAttempts > 0 ? 
+                    Math.round((this.correctAnswers / this.totalAttempts) * 100) : 100;
+                this.accuracyElement.textContent = `${accuracy}%`;
+                
+                const progressPercent = (this.correctAnswers / 9) * 100;
+                this.progressFillElement.style.width = `${progressPercent}%`;
+            }
+
+            endGame() {
+                this.gameStarted = false;
+                this.isPlaying = false;
+                this.currentWordElement.textContent = 'Hoàn thành!';
+                this.repeatBtn.disabled = true;
+                this.newGameBtn.style.display = 'inline-block';
+                
+                // Hiển thị kết quả
+                this.showResult();
+            }
+
+            showResult() {
+                const accuracy = this.totalAttempts > 0 ? 
+                    Math.round((this.correctAnswers / this.totalAttempts) * 100) : 100;
+                
+                document.getElementById('finalScore').textContent = this.score;
+                document.getElementById('finalAccuracy').textContent = `${accuracy}%`;
+                document.getElementById('totalAttempts').textContent = this.totalAttempts;
+                
+                const accuracyElement = document.getElementById('finalAccuracy');
+                accuracyElement.className = 'result-stat-value ' + 
+                    (accuracy >= 80 ? 'accuracy-high' : 
+                     accuracy >= 60 ? 'accuracy-medium' : 'accuracy-low');
+                
+                this.resultModal.style.display = 'flex';
+            }
+
+            resetGame() {
+                this.currentWordIndex = 0;
+                this.score = 0;
+                this.correctAnswers = 0;
+                this.totalAttempts = 0;
+                this.gameStarted = false;
+                this.isPlaying = false;
+                
+                this.currentWordElement.textContent = 'Bấm "Bắt đầu" để chơi';
+                this.startBtn.disabled = false;
+                this.repeatBtn.disabled = true;
+                this.newGameBtn.style.display = 'none';
+                
+                this.initializeGrid();
+                this.updateStats();
+                
+                // Khởi tạo lại grid với thứ tự ngẫu nhiên mới
+                this.initializeGrid();
+            }
+        }
+
+        // Khởi tạo game
+        const game = new PinyinGame();
+
+        // Hàm đóng modal kết quả
+        function closeResult() {
+            document.getElementById('resultModal').style.display = 'none';
+        }
+
+        // Đóng modal khi click outside
+        document.getElementById('resultModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeResult();
+            }
+        });
+    </script>
+</body>
+</html>

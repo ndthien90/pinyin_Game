@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Luyện Tập Pinyin</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for Inter (primary) and Noto Sans SC (Chinese) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for specific elements not easily covered by Tailwind */
+        body {
+                 font-family: 'Mulish', sans-serif; /* Use Mulish as the primary font */
+        }
+        /* Removed ::before pseudo-elements for flatter design */
+        /* Keyframe for shake effect */
+        @keyframes incorrectShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        /* Keyframe for correct pulse effect */
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        /* Keyframe for audio button pulse */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .audio-btn.playing {
+            animation: pulse 1s infinite;
+            /* Changed from gradient to solid color for flatter look */
+            background-image: linear-gradient(135deg, var(--tw-gradient-stops));
+            @apply from-green-500 to-green-600;
+        }
+        .pinyin-cell.correct {
+            animation: correctPulse 0.8s ease-in-out;
+        }
+        .pinyin-cell.incorrect {
+            animation: incorrectShake 0.5s ease-in-out;
+        }
+        /* Ensure specific font for Chinese characters */
+        .chinese-font {
+            font-family: 'Kaiti', sans-serif;
+        }
+        /* Ensure specific font for Pinyin/Vietnamese */
+        .pinyin-font {
+            font-family: 'Mulish', sans-serif;
+        }
+
+        /* Responsive adjustments for mobile, ensuring full screen */
+        @media (max-width: 600px) {
+            body {
+                padding: 0; /* Remove body padding for container to take full screen */
+            }
+            .container {
+                border-radius: 0; /* Remove container border-radius */
+                min-height: 100vh; /* Take full screen height */
+                margin: 0; /* Ensure no margin */
+                padding: 1rem; /* Keep internal padding */
+            }
+        }
+        /* Touch device optimizations */
+        @media (hover: none) and (pointer: coarse) {
+            .pinyin-cell:hover {
+                @apply border-gray-200 transform-none shadow-none;
+            }
+            .audio-btn:hover {
+                @apply transform-none shadow-lg;
+            }
+            .btn:hover, .action-btn:hover, .reset-btn:hover, .back-to-selection-btn:hover, .load-btn:hover {
+                @apply transform-none;
+            }
+            button, .pinyin-cell {
+                min-height: 44px;
+                min-width: 44px;
+            }
+            button:active, .pinyin-cell:active:not(.disabled) {
+                @apply opacity-80 scale-98;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex justify-center items-start p-2 overflow-x-hidden md:p-10">
+    <div class="container bg-white rounded-2xl p-5 shadow-xl max-w-xl w-full text-center relative overflow-hidden my-2 md:p-8 md:my-4
+                sm:w-full sm:min-h-screen sm:rounded-none sm:p-4 sm:flex sm:flex-col sm:justify-start sm:gap-4 sm:my-0">
+        <div class="header mb-5 sm:mb-0">
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-2 drop-shadow-sm sm:text-3xl">📝 Luyện Tập</h1>
+        </div>
+
+        <!-- Practice Selection Section -->
+        <div class="practice-selector bg-gray-50 p-4 rounded-xl mb-5 sm:mb-0" id="practice-selector">
+            <h3 class="mt-0 text-gray-700 font-semibold mb-5 text-lg sm:text-base">🎯 Thông tin học sinh và Bài luyện tập:</h3>
+            
+            <!-- Student Name Input -->
+            <div class="student-info mb-5 text-left">
+                <label for="student-name" class="block text-gray-700 font-semibold mb-2 text-base sm:text-sm">👨‍🎓 Tên học sinh:</label>
+                <input type="text" id="student-name" class="student-input w-full p-3 border-2 border-gray-300 rounded-lg text-base font-medium bg-white transition-all duration-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 placeholder-gray-500" placeholder="Nhập tên của bạn..." maxlength="50">
+            </div>
+            
+            <div class="dropdown-container flex items-center justify-center gap-3 flex-wrap sm:flex-col">
+                <select class="practice-dropdown p-3 border-2 border-gray-300 rounded-lg text-base font-semibold bg-white cursor-pointer transition-all duration-300 flex-1 min-w-[200px] max-w-xs hover:border-blue-500 hover:shadow-md focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 sm:w-full sm:min-w-0 sm:max-w-none" id="practice-dropdown">
+                    <option value="">Chọn bài luyện tập...</option>
+                </select>
+                <button class="load-btn bg-blue-500 text-white border-none py-3 px-5 rounded-full text-base cursor-pointer transition-all duration-300 font-semibold min-w-[120px] whitespace-nowrap shadow-lg hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none sm:w-full sm:min-w-0" id="load-btn">🚀 Tải Bài</button>
+                <button class="btn btn-mode-toggle bg-amber-500 text-white py-3 px-5 rounded-lg text-base font-semibold cursor-pointer transition-all duration-300 uppercase tracking-wide shadow-md hover:shadow-lg hover:-translate-y-0.5 sm:w-full" id="toggleDisplayModeBtn">⚙️Chế độ: Pinyin</button>
+            </div>
+            <div class="loading hidden mt-4 p-4 bg-yellow-100 border border-yellow-300 rounded-lg text-yellow-800 text-sm" id="loading">⏳ Đang tải dữ liệu...</div>
+            <div class="error hidden bg-red-100 text-red-700 border-2 border-red-500 rounded-lg p-4 mt-4 text-sm" id="error"></div>
+            <div class="practice-info hidden mt-4 p-4 bg-blue-100 rounded-lg text-blue-800 text-sm" id="practice-info"></div>
+        </div>
+
+        <!-- Game Section -->
+        <div class="game-section hidden" id="game-section">
+            <div class="stats flex justify-center gap-2 mb-8 flex-wrap p-4 bg-gray-50 rounded-xl">
+                <div class="stat-item flex-1 min-w-[120px] text-center">
+                    <div class="p-4 rounded-lg bg-white shadow-sm">
+                        <div class="stat-label text-xs text-gray-600 uppercase tracking-wider">Điểm số</div>
+                        <div class="stat-value text-2xl font-bold text-gray-800 mt-1" id="score">0</div>
+                    </div>
+                </div>
+                <div class="stat-item flex-1 min-w-[120px] text-center">
+                    <div class="p-4 rounded-lg bg-white shadow-sm">
+                        <div class="stat-label text-xs text-gray-600 uppercase tracking-wider">Tiến độ</div>
+                        <div class="stat-value text-2xl font-bold text-gray-800 mt-1" id="progress">0/0</div>
+                    </div>
+                </div>
+                <div class="stat-item flex-1 min-w-[120px] text-center">
+                    <div class="p-4 rounded-lg bg-white shadow-sm">
+                        <div class="stat-label text-xs text-gray-600 uppercase tracking-wider">Chính xác</div>
+                        <div class="stat-value text-2xl font-bold text-gray-800 mt-1" id="accuracy">0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="progress-bar bg-gray-200 h-2 rounded-full mb-5 overflow-hidden">
+                <div class="progress-fill bg-blue-500 h-full rounded-full transition-all duration-300" id="progressFill"></div>
+            </div>
+
+            <div class="game-area mb-8">
+                <div class="current-word bg-blue-50 border-2 border-blue-400 rounded-xl p-5 mb-6">
+                    <div class="current-word-label text-sm text-gray-600 mb-2">Từ hiện tại:</div>
+                    <div class="chinese-text-display chinese-font text-6xl text-red-600 font-normal cursor-pointer transition-all duration-300 leading-none mb-2 sm:text-5xl" id="chineseTextDisplay">Bấm "Bắt đầu"</div>
+                    <div class="meaning-display text-lg text-gray-600 mb-2 font-normal italic sm:text-base" id="meaningDisplay">để chơi</div>
+                    <button class="audio-btn bg-blue-500 text-white rounded-full w-14 h-14 text-2xl cursor-pointer flex items-center justify-center transition-all duration-300 shadow-lg mx-auto mt-2 hover:scale-110 hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none sm:w-12 sm:h-12 sm:text-xl" id="audioBtn" title="Phát âm">🔊</button>
+                    <div id="audio-status" class="audio-status hidden mt-2 p-2 rounded-lg text-sm"></div>
+                </div>
+
+                <div class="pinyin-grid grid grid-cols-3 gap-4 mb-6" id="pinyinGrid">
+                    <!-- Pinyin cells will be generated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="controls flex gap-4 justify-center mb-5 flex-wrap">
+                <button class="btn btn-primary bg-blue-500 text-white py-3 px-6 rounded-lg text-base font-semibold cursor-pointer transition-all duration-300 uppercase tracking-wide flex-grow min-w-[120px] hover:bg-blue-600 hover:-translate-y-0.5" id="startBtn">Bắt đầu</button>
+                <button class="btn btn-success bg-green-500 text-white py-3 px-6 rounded-lg text-base font-semibold cursor-pointer transition-all duration-300 uppercase tracking-wide flex-grow min-w-[120px] hover:bg-green-600 hover:-translate-y-0.5 hidden" id="newGameBtn">Làm lại</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Modal -->
+    <div class="result-modal fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50 p-4" id="resultModal">
+        <div class="result-content bg-white p-8 rounded-2xl border-2 border-green-500 text-center max-w-md w-full shadow-2xl relative overflow-hidden">
+            <h2 class="result-title text-3xl font-bold text-gray-800 mb-5 sm:text-2xl"> <span class="text-indigo-600"></span></h2>
+            <div class="text-lg text-gray-600 mb-2 sm:text-base">
+                <span id="finalPracticeName"></span>
+            </div>
+            <div class="text-base text-gray-700 mb-4 sm:text-sm">
+                🔢 Lần nộp: <span id="finalAttemptCount">0</span>
+            </div>
+            <div class="result-stats mb-8">
+                <div class="result-stat mb-4">
+                    <div class="result-stat-label text-sm text-gray-600">Tổng điểm</div>
+                    <div class="result-stat-value text-3xl font-bold text-blue-500" id="finalScore">0</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-stat-label text-sm text-gray-600">Độ chính xác</div>
+                    <div class="result-stat-value text-3xl font-bold" id="finalAccuracy">0%</div>
+                </div>
+                <div class="result-stat hidden">
+                    <div class="result-stat-label text-sm text-gray-600">Số lần thử</div>
+                    <div class="result-stat-value" id="totalAttempts">0</div>
+                </div>
+            </div>
+            <div class="text-lg mb-2 font-semibold text-green-600 sm:text-base" id="personalMessage"></div>
+            <div class="text-base mb-5 text-gray-700 sm:text-sm" id="overallMessage"></div>
+
+            <div class="result-buttons flex flex-col gap-3 mt-5">
+                <button class="result-btn reset-btn bg-orange-500 text-white py-3 px-6 rounded-lg text-base cursor-pointer transition-all duration-300 font-semibold uppercase tracking-wide hover:shadow-lg hover:-translate-y-0.5 sm:text-sm" id="modalResetBtn">🔄 Làm lại</button>
+                <button class="result-btn back-to-selection-btn bg-purple-600 text-white py-3 px-6 rounded-lg text-base cursor-pointer transition-all duration-300 font-semibold uppercase tracking-wide hover:shadow-lg hover:-translate-y-0.5 sm:text-sm" id="modalBackToSelectionBtn">📚 Chọn bài khác</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration for practices and paths
+        const CONFIG = {
+            dataPath: 'data_pinyinPractice/', // Path to the directory containing lesson data
+            practices: [
+                { id: 'practice1', name: '📚 Luyện Tập 1' },
+                { id: 'practice2', name: '📚 Luyện Tập 2' },
+                { id: 'practice3', name: '📚 Luyện Tập 3 ' },
+                { id: 'practice4', name: '📚 Luyện Tập 4 ' },
+                { id: 'practice5', name: '📚 Luyện Tập 5 ' },
+                { id: 'practice6', name: '📚 Luyện Tập 6 ' },
+                { id: 'practice7', name: '📚 Luyện Tập 7 ' },
+                { id: 'practice8', name: '📚 Luyện Tập 8 ' },
+                { id: 'practice9', name: '📚 Luyện Tập 9 ' },
+                { id: 'practice10', name: '📚 Luyện Tập 10 ' },
+                { id: 'practice11', name: '📚 Luyện Tập 11 ' },
+                { id: 'practice12', name: '📚 Luyện Tập 12 ' },
+                { id: 'practice13', name: '📚 Luyện Tập 13 ' },
+                { id: 'practice14', name: '📚 Luyện Tập 14 ' },
+                { id: 'practice15', name: '📚 Luyện Tập 15 ' },
+                { id: 'practice16', name: '📚 Luyện Tập 16 ' }
+            ]
+        };
+
+        // Fallback demo data if file cannot be loaded
+        // Structure: chinese|pinyin|meaning
+        const demoData = {
+            practice1: `你好|nǐ hǎo|xin chào
+谢谢|xiè xiè|cảm ơn
+对不起|duì bu qǐ|xin lỗi
+再见|zài jiàn|tạm biệt
+没关系|méi guān xì|không sao
+请问|qǐng wèn|xin hỏi
+不客气|bú kè qì|không có gì
+多少钱|duō shǎo qián|bao nhiêu tiền
+明天见|míng tiān jiàn|hẹn gặp lại ngày mai`,
+            practice2: `八|bā|tám
+怕|pà|sợ
+马|mǎ|ngựa
+发|fā|phát
+那|nà|đó
+个|gè|cái
+可|kě|có thể
+天|tiān|trời
+不|bù|không
+对|duì|đúng
+有|yǒu|có
+会|huì|biết
+说|shuō|nói
+做|zuò|làm
+想|xiǎng|nghĩ`,
+            practice3: `门|mén|cửa
+问|wèn|hỏi
+很|hěn|rất
+跟|gēn|với
+什|shén|gì
+么|me|gì
+时|shí|thời
+候|hòu|lúc
+年|nián|năm
+月|yuè|tháng
+日|rì|ngày
+im|jīn|hôm
+明|míng|mai
+昨|zuó|hôm qua
+现|xiàn|hiện tại`
+        };
+
+        class PinyinGame {
+            constructor() {
+                this.allWords = []; // All words loaded from the file
+                this.practiceWords = []; // The 9 randomly selected words for the current practice session
+                
+                // Initialize game state variables
+                this.currentWordIndex = 0; // Index of the current word in the shuffled 'practiceWords' array
+                this.score = 0; // Player's score
+                this.correctAnswers = 0; // Number of correct answers
+                this.totalAttempts = 0; // Total attempts (number of pinyin cell selections)
+                this.gameStarted = false; // Game started state
+                this.isPlaying = false; // Playing state (waiting for user to select pinyin)
+                this.currentAudio = null; // Current Audio object
+                this.studentName = ''; // Student's name
+                this.currentPracticeId = ''; // Current practice ID
+                this.attemptCount = 0; // Number of times the game has been completed
+
+                // Display mode configuration
+                this.displayModes = ['pinyin', 'meaning', 'chinese'];
+                this.currentDisplayModeIndex = 0;
+                this.displayMode = this.displayModes[this.currentDisplayModeIndex]; // Current display mode
+
+                // Array to store data for the 9 pinyin cells on the grid. Each cell has pinyin and state (hidden/shown)
+                this.gridPinyinCellsData = []; 
+
+                // Initialize DOM elements
+                this.initializeElements();
+                // Set up event listeners
+                this.setupEventListeners();
+                // Initialize practice selection interface
+                this.initializePracticeSelector();
+                // Update initial display mode button text
+                this.updateDisplayModeButtonText();
+            }
+
+            /**
+             * Initializes references to DOM elements.
+             */
+            initializeElements() {
+                try {
+                    this.practiceSelector = document.getElementById('practice-selector');
+                    this.studentNameInput = document.getElementById('student-name');
+                    this.practiceDropdown = document.getElementById('practice-dropdown');
+                    this.loadBtn = document.getElementById('load-btn');
+                    this.loadingIndicator = document.getElementById('loading');
+                    this.errorDisplay = document.getElementById('error');
+                    this.practiceInfoDisplay = document.getElementById('practice-info');
+                    this.gameSection = document.getElementById('game-section');
+
+                    this.scoreElement = document.getElementById('score');
+                    this.progressElement = document.getElementById('progress');
+                    this.accuracyElement = document.getElementById('accuracy');
+                    this.progressFillElement = document.getElementById('progressFill');
+                    this.chineseTextDisplay = document.getElementById('chineseTextDisplay');
+                    this.meaningDisplay = document.getElementById('meaningDisplay');
+                    this.audioBtn = document.getElementById('audioBtn');
+                    this.audioStatus = document.getElementById('audio-status');
+                    this.pinyinGridElement = document.getElementById('pinyinGrid');
+                    this.startBtn = document.getElementById('startBtn');
+                    this.newGameBtn = document.getElementById('newGameBtn');
+                    this.toggleDisplayModeBtn = document.getElementById('toggleDisplayModeBtn'); // Mode toggle button
+                    
+                    this.resultModal = document.getElementById('resultModal');
+                    // Removed console.log for cleaner output, kept error check
+                    if (!this.resultModal) {
+                        console.error('Lỗi: Phần tử resultModal không tìm thấy!');
+                    }
+
+                    // Ensure resultModal is not null before querying its children
+                    if (this.resultModal) {
+                        this.resultTitle = this.resultModal.querySelector('.result-title span');
+                        // Removed console.log for cleaner output, kept error check
+                        if (!this.resultTitle) console.error('Lỗi: resultTitle không tìm thấy!');
+                        this.finalPracticeName = document.getElementById('finalPracticeName');
+                        if (!this.finalPracticeName) console.error('Lỗi: finalPracticeName không tìm thấy!');
+                        this.finalAttemptCount = document.getElementById('finalAttemptCount');
+                        if (!this.finalAttemptCount) console.error('Lỗi: finalAttemptCount không tìm thấy!');
+                        this.finalScore = document.getElementById('finalScore');
+                        if (!this.finalScore) console.error('Lỗi: finalScore không tìm thấy!');
+                        this.finalAccuracy = document.getElementById('finalAccuracy');
+                        if (!this.finalAccuracy) console.error('Lỗi: finalAccuracy không tìm thấy!');
+                        this.totalAttemptsModal = document.getElementById('totalAttempts');
+                        if (!this.totalAttemptsModal) console.error('Lỗi: totalAttemptsModal không tìm thấy!');
+                        this.personalMessage = document.getElementById('personalMessage');
+                        if (!this.personalMessage) console.error('Lỗi: personalMessage không tìm thấy!');
+                        this.overallMessage = document.getElementById('overallMessage');
+                        if (!this.overallMessage) console.error('Lỗi: overallMessage không tìm thấy!');
+                        this.modalResetBtn = document.getElementById('modalResetBtn');
+                        if (!this.modalResetBtn) console.error('Lỗi: modalResetBtn không tìm thấy!');
+                        this.modalBackToSelectionBtn = document.getElementById('modalBackToSelectionBtn');
+                        if (!this.modalBackToSelectionBtn) console.error('Lỗi: modalBackToSelectionBtn không tìm thấy!');
+                    } else {
+                        console.error('Lỗi: Không thể truy cập các phần tử con của resultModal vì resultModal là null.');
+                    }
+                } catch (e) {
+                    console.error('Lỗi trong quá trình khởi tạo phần tử DOM:', e);
+                }
+            }
+
+            /**
+             * Sets up event listeners for buttons and dropdown.
+             */
+            setupEventListeners() {
+                this.loadBtn.addEventListener('click', () => this.loadPractice());
+                this.startBtn.addEventListener('click', () => this.startGame());
+                this.newGameBtn.addEventListener('click', () => this.resetGame(true)); // Pass true to indicate direct restart
+                this.audioBtn.addEventListener('click', () => this.playCurrentWordAudio());
+                this.toggleDisplayModeBtn.addEventListener('click', () => this.toggleDisplayMode()); // Event for mode toggle button
+                
+                if (this.modalResetBtn) { // Check if elements exist before adding listeners
+                    this.modalResetBtn.addEventListener('click', () => this.resetGame(true)); // Pass true to indicate direct restart
+                } else {
+                    console.warn('Cảnh báo: modalResetBtn không tìm thấy.');
+                }
+                if (this.modalBackToSelectionBtn) {
+                    this.modalBackToSelectionBtn.addEventListener('click', () => this.backToSelection());
+                } else {
+                    console.warn('Cảnh báo: modalBackToSelectionBtn không tìm thấy.');
+                }
+
+                // Close modal when clicking outside modal content
+                if (this.resultModal) {
+                    this.resultModal.addEventListener('click', (e) => {
+                        if (e.target === this.resultModal) {
+                            this.resultModal.style.display = 'none';
+                            // Removed console.log for cleaner output
+                        }
+                    });
+                }
+            }
+
+            /**
+             * Initializes the practice selection interface: populates the dropdown.
+             */
+            initializePracticeSelector() {
+                this.practiceDropdown.innerHTML = '<option value="">Chọn bài luyện tập...</option>';
+                CONFIG.practices.forEach(practice => {
+                    const option = document.createElement('option');
+                    option.value = practice.id;
+                    option.textContent = practice.name;
+                    this.practiceDropdown.appendChild(option);
+                });
+                this.showElement(this.practiceSelector);
+                this.hideElement(this.gameSection);
+            }
+
+            /**
+             * Loads practice data from the file.
+             */
+            async loadPractice() {
+                this.studentName = this.studentNameInput.value.trim();
+                this.currentPracticeId = this.practiceDropdown.value;
+
+                // Validate student name
+                if (!this.studentName) {
+                    this.showError('Vui lòng nhập tên học sinh!');
+                    this.studentNameInput.classList.add('border-red-500', 'ring-red-100');
+                    this.studentNameInput.focus();
+                    return;
+                }
+                this.studentNameInput.classList.remove('border-red-500', 'ring-red-100');
+
+                // Validate practice selection
+                if (!this.currentPracticeId) {
+                    this.showError('Vui lòng chọn một bài luyện tập!');
+                    return;
+                }
+                
+                this.showLoading(true);
+                this.hideError();
+
+                try {
+                    let fileContent;
+                    let isUsingDemo = false;
+                    
+                    const txtPath = `${CONFIG.dataPath}${this.currentPracticeId}/${this.currentPracticeId}.txt`;
+                    
+                    try {
+                        const response = await fetch(txtPath);
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        fileContent = await response.text();
+                    } catch (error) {
+                        console.warn(`Không thể tải tệp từ ${txtPath}:`, error);
+                        if (demoData[this.currentPracticeId]) {
+                            fileContent = demoData[this.currentPracticeId];
+                            isUsingDemo = true;
+                        } else {
+                            throw new Error(`Không tìm thấy dữ liệu cho bài "${this.currentPracticeId}".`);
+                        }
+                    }
+
+                    if (isUsingDemo) {
+                        this.showError(`⚠️ Đang sử dụng dữ liệu demo cho bài "${this.currentPracticeId}". Để dùng file thật, hãy đặt file tại: ${txtPath}`);
+                        setTimeout(() => this.hideError(), 6000);
+                    }
+                    
+                    this.allWords = this.parsePracticeData(fileContent);
+
+                    if (this.allWords.length === 0) {
+                        throw new Error('Không tìm thấy từ hợp lệ trong file bài học!');
+                    }
+                    
+                    // Select 9 random words with unique pinyins for the practice session
+                    this.selectRandomPracticeWords(9);
+
+                    this.showPracticeInfo();
+                    this.showLoading(false);
+                    this.startBtn.disabled = false; // Enable Start button
+                    this.shufflePracticeWords(); // Shuffle practice words after selection
+                    this.prepareAndRenderInitialGrid(); // Prepare initial pinyin grid
+                    this.updateStats(); // Update initial stats
+                    this.chineseTextDisplay.textContent = 'Bấm "Bắt đầu"';
+                    this.meaningDisplay.textContent = 'để chơi';
+
+                } catch (error) {
+                    console.error('Lỗi khi tải bài luyện tập:', error);
+                    this.showError(error.message);
+                    this.showLoading(false);
+                    this.startBtn.disabled = true; // Disable Start button on error
+                }
+            }
+
+            /**
+             * Parses practice data from a text string.
+             * @param {string} dataString - Data string from the .txt file.
+             * @returns {Array<Object>} Array of word objects.
+             */
+            parsePracticeData(dataString) {
+                const lines = dataString.trim().split('\n');
+                const parsedWords = [];
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    
+                    const parts = line.split('|');
+                    // Expected structure: chinese|pinyin|meaning.
+                    if (parts.length >= 3) { 
+                        parsedWords.push({
+                            chinese: parts[0].trim(),
+                            pinyin: parts[1].trim(), // Get pinyin from the 2nd element
+                            meaning: parts[2].trim()
+                        });
+                    } else {
+                        console.warn(`Dòng ${i + 1} có định dạng không đúng: ${line}. Định dạng mong muốn: chinese|pinyin|meaning`);
+                    }
+                }
+                return parsedWords;
+            }
+
+            /**
+             * Selects a specified number of random words with unique pinyins for the practice session.
+             * @param {number} count - The number of words to select.
+             */
+            selectRandomPracticeWords(count) {
+                this.practiceWords = [];
+                const availableWords = [...this.allWords]; // Create a copy to modify
+                const selectedPinyins = new Set();
+
+                // Shuffle available words to ensure randomness
+                for (let i = availableWords.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [availableWords[i], availableWords[j]] = [availableWords[j], availableWords[i]];
+                }
+
+                for (let i = 0; i < availableWords.length && this.practiceWords.length < count; i++) {
+                    const word = availableWords[i];
+                    if (!selectedPinyins.has(word.pinyin)) {
+                        this.practiceWords.push(word);
+                        selectedPinyins.add(word.pinyin);
+                    }
+                }
+
+                // If not enough unique pinyins, fill with duplicates (though the request implies unique pinyins)
+                // This part ensures we always have 'count' words, even if pinyins are not strictly unique.
+                // For this specific request, we prioritize unique pinyins first.
+                // If there are fewer than 9 unique pinyins in the entire dataset, this will select all unique ones
+                // and then stop. If the user strictly needs 9 words, even if pinyins are duplicated,
+                // a different logic would be needed here.
+                // For now, it will select up to 'count' words with unique pinyins.
+                if (this.practiceWords.length < count) {
+                    console.warn(`Không thể tìm thấy ${count} từ có pinyin khác nhau. Đã chọn ${this.practiceWords.length} từ pinyin duy nhất.`);
+                    // If you *must* have 9 words, even with duplicate pinyins, you could add logic here
+                    // to pick remaining words randomly from 'allWords' without pinyin uniqueness check.
+                    // For this request, we'll stick to the unique pinyin requirement as much as possible.
+                }
+            }
+
+
+            /**
+             * Displays information about the selected practice.
+             */
+            showPracticeInfo() {
+                const practiceName = CONFIG.practices.find(p => p.id === this.currentPracticeId)?.name || this.currentPracticeId;
+                this.practiceInfoDisplay.innerHTML = `
+                    <p class="mb-2"><strong>👨‍🎓 Học sinh: ${this.studentName}</strong></p>
+                    <p class="mb-2"><strong>📚 ${practiceName}</strong></p>
+                    <p class="mb-4">Số từ trong bài luyện tập: ${this.practiceWords.length}</p>
+                    <div class="action-buttons flex justify-center mt-4">
+                        <button class="action-btn start-game-btn bg-indigo-500 text-white py-3 px-6 rounded-lg text-base font-semibold cursor-pointer transition-all duration-300 uppercase tracking-wide flex items-center justify-center gap-2 flex-1 min-w-[150px] max-w-xs hover:shadow-lg hover:-translate-y-0.5" onclick="game.startGame()">
+                            🎯 Bắt đầu
+                        </button>
+                    </div>
+                `;
+                this.showElement(this.practiceInfoDisplay);
+            }
+
+            /**
+             * Shows/hides loading indicator.
+             * @param {boolean} show - True to show, False to hide.
+             */
+            showLoading(show) {
+                this.loadingIndicator.style.display = show ? 'block' : 'none';
+                this.loadBtn.disabled = show;
+                this.practiceDropdown.disabled = show;
+                this.studentNameInput.disabled = show;
+            }
+
+            /**
+             * Displays an error message.
+             * @param {string} message - Error content.
+             */
+            showError(message) {
+                this.errorDisplay.textContent = message;
+                this.errorDisplay.style.display = 'block';
+            }
+
+            /**
+             * Hides the error message.
+             */
+            hideError() {
+                this.errorDisplay.style.display = 'none';
+            }
+
+            /**
+             * Displays a DOM element.
+             * @param {HTMLElement} element - Element to display.
+             */
+            showElement(element) {
+                element.style.display = 'block';
+            }
+
+            /**
+             * Hides a DOM element.
+             * @param {HTMLElement} element - Element to hide.
+             */
+            hideElement(element) {
+                element.style.display = 'none';
+            }
+
+            /**
+             * Prepares data for the 9 initial pinyin cells and renders them.
+             * These cells will be fixed throughout the game.
+             */
+            prepareAndRenderInitialGrid() {
+                // Get unique pinyins from the selected 'practiceWords'
+                let uniquePinyinsFromPractice = Array.from(new Set(this.practiceWords.map(word => word.pinyin)));
+                
+                // Shuffle these unique pinyins
+                for (let i = uniquePinyinsFromPractice.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [uniquePinyinsFromPractice[i], uniquePinyinsFromPractice[j]] = [uniquePinyinsFromPractice[j], uniquePinyinsFromPractice[i]];
+                }
+
+                // Take the first 9 unique pinyins for the grid.
+                // If there are fewer than 9 unique pinyins in practiceWords, we'll use what we have.
+                const pinyinsForGrid = uniquePinyinsFromPractice.slice(0, 9);
+
+                // If less than 9 unique pinyins are available, fill the remaining spots with duplicates
+                // from the available unique pinyins to ensure 9 cells are always displayed.
+                while (pinyinsForGrid.length < 9 && uniquePinyinsFromPractice.length > 0) {
+                    pinyinsForGrid.push(uniquePinyinsFromPractice[Math.floor(Math.random() * uniquePinyinsFromPractice.length)]);
+                }
+                // If for some reason there are absolutely no pinyins, add placeholders
+                while (pinyinsForGrid.length < 9) {
+                     pinyinsForGrid.push(`pinyin${pinyinsForGrid.length + 1}`);
+                }
+
+
+                // Shuffle the grid pinyins one more time to randomize their display positions
+                for (let i = pinyinsForGrid.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [pinyinsForGrid[i], pinyinsForGrid[j]] = [pinyinsForGrid[j], pinyinsForGrid[i]];
+                }
+
+
+                this.gridPinyinCellsData = pinyinsForGrid.map(pinyin => ({
+                    pinyin: pinyin, // This is the pinyin string for the cell
+                    isHidden: false,
+                    isCorrect: false
+                }));
+
+                this.renderPinyinGrid();
+            }
+
+            /**
+             * Renders (or re-renders) the pinyin grid based on data in gridPinyinCellsData
+             * and the current display mode.
+             */
+            renderPinyinGrid() {
+                this.pinyinGridElement.innerHTML = ''; // Clear existing cells
+                this.gridPinyinCellsData.forEach((cellData, index) => {
+                    const cell = document.createElement('div');
+                    cell.className = 'pinyin-cell bg-white border-2 border-gray-200 rounded-xl p-5 text-lg font-semibold text-gray-800 cursor-pointer transition-all duration-300 min-h-[80px] flex items-center justify-center';
+                    
+                    if (cellData.isHidden) {
+                        cell.classList.add('invisible', 'opacity-0'); // Use Tailwind's invisible and opacity classes
+                    } else {
+                        let displayText = '';
+                        // Find a word in this.allWords that has the corresponding pinyin to get Chinese char and meaning
+                        // (only need to find 1 word, for display purposes)
+                        const correspondingWord = this.allWords.find(word => word.pinyin === cellData.pinyin);
+
+                        switch (this.displayMode) {
+                            case 'pinyin':
+                                displayText = cellData.pinyin;
+                                cell.classList.add('pinyin-font', 'text-lg'); 
+                                cell.classList.remove('chinese-font');
+                                break;
+                            case 'meaning':
+                                displayText = correspondingWord ? correspondingWord.meaning : 'N/A';
+                                cell.classList.add('pinyin-font', 'text-base');
+                                cell.classList.remove('chinese-font');
+                                break;
+                            case 'chinese':
+                                displayText = correspondingWord ? correspondingWord.chinese : 'N/A';
+                                cell.classList.add('chinese-font', 'text-2xl', 'sm:text-xl'); 
+                                cell.classList.remove('pinyin-font');
+                                break;
+                            default:
+                                displayText = cellData.pinyin;
+                                cell.classList.add('pinyin-font', 'text-lg');
+                                cell.classList.remove('chinese-font');
+                        }
+                        cell.textContent = displayText;
+                        // Only add event listener if the cell is not hidden
+                        cell.addEventListener('click', () => this.selectCell(index)); 
+                    }
+                    this.pinyinGridElement.appendChild(cell);
+                });
+            }
+
+            /**
+             * Starts the game.
+             */
+            startGame() {
+                if (this.practiceWords.length === 0) {
+                    this.showError('Chưa có dữ liệu bài học. Vui lòng chọn bài học trước.');
+                    return;
+                }
+
+                this.hideElement(this.practiceSelector);
+                this.showElement(this.gameSection);
+
+                this.gameStarted = true;
+                this.startBtn.style.display = 'none'; // Hide "Start" button
+                this.newGameBtn.style.display = 'none'; // Ensure "Play Again" button is also hidden
+                this.currentWordIndex = 0; // Reset word index to 0
+                this.score = 0;
+                this.correctAnswers = 0;
+                this.totalAttempts = 0;
+                
+                // Reset state of pinyin cells on the grid
+                this.gridPinyinCellsData.forEach(data => {
+                    data.isHidden = false;
+                    data.isCorrect = false;
+                });
+                this.renderPinyinGrid(); // Re-render grid to show all cells
+
+                this.updateStats(); // Update initial stats
+                this.playCurrentWord(); // Start playing the first word
+            }
+
+            /**
+             * Plays the current word.
+             * Gets the current word and plays its audio.
+             */
+            playCurrentWord() {
+                // Check if all words have been played, end game
+                if (this.currentWordIndex >= this.practiceWords.length) {
+                    this.endGame();
+                    return;
+                }
+
+                this.isPlaying = true; // Set playing state
+                const currentWord = this.practiceWords[this.currentWordIndex];
+                
+                // Reset font styles to default (Inter) and remove specific classes first
+                this.chineseTextDisplay.classList.remove('chinese-font', 'pinyin-font', 'text-6xl', 'text-red-600', 'sm:text-5xl', 'text-xl', 'text-gray-800');
+                this.meaningDisplay.classList.remove('chinese-font', 'pinyin-font', 'text-lg', 'text-gray-600', 'sm:text-base', 'italic');
+
+                switch (this.displayMode) {
+                    case 'pinyin':
+                        // If grid displays Pinyin, current word section should display Chinese characters and Meaning
+                        this.chineseTextDisplay.textContent = currentWord.chinese;
+                        this.chineseTextDisplay.classList.add('chinese-font', 'text-6xl', 'text-red-600', 'sm:text-5xl');
+                        this.meaningDisplay.textContent = currentWord.meaning;
+                        this.meaningDisplay.classList.add('pinyin-font', 'text-lg', 'text-gray-600', 'sm:text-base', 'italic');
+                        break;
+                    case 'meaning':
+                        // If grid displays Meaning, current word section should display Chinese characters and Pinyin
+                        this.chineseTextDisplay.textContent = currentWord.chinese;
+                        this.chineseTextDisplay.classList.add('chinese-font', 'text-6xl', 'text-red-600', 'sm:text-5xl');
+                        this.meaningDisplay.textContent = currentWord.pinyin;
+                        this.meaningDisplay.classList.add('pinyin-font', 'text-lg', 'text-gray-600', 'sm:text-base');
+                        break;
+                    case 'chinese':
+                        // If grid displays Chinese characters, current word section should display Pinyin and Meaning
+                        this.chineseTextDisplay.textContent = currentWord.pinyin;
+                        this.chineseTextDisplay.classList.add('pinyin-font', 'text-6xl', 'text-gray-800', 'sm:text-5xl');
+                        this.meaningDisplay.textContent = currentWord.meaning;
+                        this.meaningDisplay.classList.add('pinyin-font', 'text-lg', 'text-gray-600', 'sm:text-base', 'italic');
+                        break;
+                }
+                
+                // Play audio for the Chinese word (always plays Chinese characters)
+                this.playCurrentWordAudio();
+            }
+
+            /**
+             * Plays the audio for the current Chinese word.
+             * Prioritizes MP3 file, falls back to Web Speech API on error.
+             */
+            async playCurrentWordAudio() {
+                if (!this.gameStarted || !this.isPlaying) return;
+
+                const currentWord = this.practiceWords[this.currentWordIndex];
+                const audioFilePath = `${CONFIG.dataPath}${this.currentPracticeId}/mp3/${currentWord.chinese}.mp3`;
+
+                if (this.currentAudio) {
+                    this.currentAudio.pause();
+                    this.currentAudio.currentTime = 0;
+                }
+
+                this.audioBtn.classList.add('playing');
+                this.audioBtn.disabled = true;
+                this.audioBtn.classList.remove('bg-red-500', 'bg-red-600'); // Remove error background
+                this.hideElement(this.audioStatus);
+
+                try {
+                    this.currentAudio = new Audio(audioFilePath);
+                    this.currentAudio.volume = 1.0;
+                    this.currentAudio.playbackRate = 0.8;
+
+                    this.currentAudio.onended = () => {
+                        this.audioBtn.classList.remove('playing');
+                        this.audioBtn.disabled = false;
+                    };
+
+                    this.currentAudio.onerror = (e) => {
+                        console.error('Lỗi tệp âm thanh:', e);
+                        this.audioBtn.classList.remove('playing');
+                        this.audioBtn.classList.add('bg-red-500', 'bg-red-600'); // Add error background
+                        this.audioBtn.disabled = false;
+                        //this.showAudioStatus('Không tìm thấy tệp âm thanh. Sử dụng giọng đọc tổng hợp.', 'error');
+                        this.speakText(currentWord.chinese); // Fallback to text-to-speech
+                    };
+
+                    await this.currentAudio.play();
+                } catch (error) {
+                    console.error('Lỗi khi phát âm thanh (khối catch):', error);
+                    this.audioBtn.classList.remove('playing');
+                    this.audioBtn.classList.add('bg-red-500', 'bg-red-600'); // Add error background
+                    this.audioBtn.disabled = false;
+                    //this.showAudioStatus('Lỗi khi phát âm thanh. Sử dụng giọng đọc tổng hợp.', 'error');
+                    this.speakText(currentWord.chinese); // Fallback to text-to-speech
+                }
+            }
+
+            /**
+             * Speaks text using the Web Speech API.
+             * @param {string} text - Text to speak.
+             */
+            speakText(text) {
+                if ('speechSynthesis' in window) {
+                    speechSynthesis.cancel(); // Stop any ongoing speech
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'zh-CN'; // Set language to Chinese
+                    utterance.rate = 0.8; // Speech rate
+                    utterance.pitch = 1; // Speech pitch
+                    speechSynthesis.speak(utterance);
+
+                    utterance.onend = () => {
+                        this.audioBtn.classList.remove('playing');
+                        this.audioBtn.disabled = false;
+                        this.audioBtn.classList.remove('bg-red-500', 'bg-red-600'); // Remove error state if TTS is successful
+                    };
+                    utterance.onerror = (e) => {
+                        console.error('Lỗi chuyển văn bản thành giọng nói:', e);
+                        this.audioBtn.classList.remove('playing');
+                        this.audioBtn.classList.add('bg-red-500', 'bg-red-600'); // Add error background
+                        this.audioBtn.disabled = false;
+                        //this.showAudioStatus('Không thể phát âm thanh tổng hợp.', 'error');
+                    };
+                } else {
+                    this.showAudioStatus('Trình duyệt không hỗ trợ Web Speech API.', 'error');
+                    this.audioBtn.classList.remove('playing');
+                    this.audioBtn.classList.add('bg-red-500', 'bg-red-600'); // Add error background
+                    this.audioBtn.disabled = false;
+                }
+            }
+
+            /**
+             * Displays audio status.
+             * @param {string} message - Message to display.
+             * @param {string} type - Status type ('info', 'error').
+             */
+            showAudioStatus(message, type) {
+                this.audioStatus.textContent = message;
+                this.audioStatus.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'border-red-300', 'bg-blue-100', 'text-blue-700', 'border-blue-300');
+                if (type === 'error') {
+                    this.audioStatus.classList.add('bg-red-100', 'text-red-700', 'border-red-300');
+                } else if (type === 'info') {
+                    this.audioStatus.classList.add('bg-blue-100', 'text-blue-700', 'border-blue-300');
+                }
+                this.showElement(this.audioStatus);
+                setTimeout(() => this.hideElement(this.audioStatus), 3000);
+            }
+
+            /**
+             * Handles user selection of a pinyin cell.
+             * @param {number} selectedIndex - Index of the pinyin cell selected by the user in gridPinyinCellsData array.
+             */
+            selectCell(selectedIndex) { 
+                // Ensure game is running and waiting for user selection
+                if (!this.gameStarted || !this.isPlaying) return;
+                
+                const selectedCellData = this.gridPinyinCellsData[selectedIndex];
+                const selectedCellElement = this.pinyinGridElement.children[selectedIndex];
+                
+                // If cell is already hidden, do nothing
+                if (selectedCellData.isHidden) return;
+
+                this.totalAttempts++;
+                
+                // Check if the selection is correct
+                if (selectedCellData.pinyin === this.practiceWords[this.currentWordIndex].pinyin) { 
+                    // If correct
+                    selectedCellElement.classList.add('correct', 'bg-green-100', 'border-green-500', 'text-green-700'); // Add 'correct' class to change color
+                    this.score += 10; // Increase score
+                    this.correctAnswers++; // Increase correct answer count
+                    
+                    // Update data state for the cell to be hidden
+                    selectedCellData.isHidden = true;
+                    selectedCellData.isCorrect = true;
+
+                    // Disable all other pinyin cells to prevent double-clicking
+                    this.disablePinyinGrid(true);
+                    this.isPlaying = false; // Pause interaction
+
+                    // Wait a bit then update cell and move to next word
+                    setTimeout(() => {
+                        selectedCellElement.classList.remove('correct', 'bg-green-100', 'border-green-500', 'text-green-700'); // Remove 'correct' class
+                        this.renderPinyinGrid(); // Re-render grid to update hidden state of cell
+                        this.currentWordIndex++; // Move to the next word in the practiceWords array
+                        this.disablePinyinGrid(false); // Re-enable grid
+                        this.playCurrentWord(); // Play new word
+                    }, 1000);
+                } else {
+                    // If incorrect
+                    selectedCellElement.classList.add('incorrect', 'bg-red-100', 'border-red-500', 'text-red-700'); // Add 'incorrect' class to change color and shake
+                    // Only deduct points if current score is greater than 0
+                    if (this.score > 0) { 
+                        this.score = Math.max(0, this.score - 5); // Deduct 5 points but not below 0
+                    }
+                    // Remove 'incorrect' class after a delay
+                    setTimeout(() => {
+                        selectedCellElement.classList.remove('incorrect', 'bg-red-100', 'border-red-500', 'text-red-700');
+                    }, 1000);
+                }
+                
+                // Update stats on the interface
+                this.updateStats();
+            }
+
+            /**
+             * Disables or enables the pinyin grid.
+             * @param {boolean} disable - True to disable, False to enable.
+             */
+            disablePinyinGrid(disable) {
+                const cells = this.pinyinGridElement.children;
+                for (let i = 0; i < cells.length; i++) {
+                    if (!this.gridPinyinCellsData[i].isHidden) { // Only disable cells that are not hidden
+                        if (disable) {
+                            cells[i].classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+                        } else {
+                            cells[i].classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+                        }
+                    }
+                }
+            }
+
+            /**
+             * Updates statistics on the user interface.
+             */
+            updateStats() {
+                this.scoreElement.textContent = this.score;
+                this.progressElement.textContent = `${this.correctAnswers}/${this.practiceWords.length}`;
+                
+                // Calculate accuracy
+                const accuracy = this.totalAttempts > 0 ? 
+                    Math.round((this.correctAnswers / this.totalAttempts) * 100) : 0;
+                this.accuracyElement.textContent = `${accuracy}%`;
+                
+                // Update progress bar
+                const progressPercent = (this.correctAnswers / this.practiceWords.length) * 100;
+                this.progressFillElement.style.width = `${progressPercent}%`;
+            }
+
+            /**
+             * Toggles the display mode of pinyin cells (Pinyin, Meaning, Chinese).
+             */
+            toggleDisplayMode() {
+                this.currentDisplayModeIndex = (this.currentDisplayModeIndex + 1) % this.displayModes.length;
+                this.displayMode = this.displayModes[this.currentDisplayModeIndex];
+                this.updateDisplayModeButtonText();
+                this.renderPinyinGrid(); // Re-render grid with new mode
+                // Update current word display to reflect new mode
+                if (this.gameStarted && this.isPlaying) {
+                    this.playCurrentWord(); 
+                }
+            }
+
+            /**
+             * Updates the text of the mode toggle button.
+             */
+            updateDisplayModeButtonText() {
+                let buttonText = '';
+                switch (this.displayMode) {
+                    case 'pinyin':
+                        buttonText = 'Chế độ: Pinyin';
+                        break;
+                    case 'meaning':
+                        buttonText = 'Chế độ: Nghĩa';
+                        break;
+                    case 'chinese':
+                        buttonText = 'Chế độ: Chữ Hán';
+                        break;
+                }
+                this.toggleDisplayModeBtn.textContent = `⚙️ ${buttonText}`;
+            }
+
+            /**
+             * Ends the game when all words are completed.
+             */
+            endGame() {
+                console.log('endGame() được gọi. Trò chơi đã kết thúc.');
+                this.gameStarted = false;
+                this.isPlaying = false;
+                this.chineseTextDisplay.textContent = 'Hoàn thành!';
+                this.chineseTextDisplay.classList.remove('chinese-font', 'pinyin-font', 'text-6xl', 'text-red-600', 'sm:text-5xl', 'text-xl', 'text-gray-800');
+                this.chineseTextDisplay.classList.add('pinyin-font', 'text-4xl', 'text-gray-800', 'sm:text-3xl');
+
+                this.meaningDisplay.textContent = 'Tuyệt vời!';
+                this.meaningDisplay.classList.remove('chinese-font', 'pinyin-font', 'text-lg', 'text-gray-600', 'sm:text-base', 'italic');
+                this.meaningDisplay.classList.add('pinyin-font', 'text-lg', 'text-gray-600', 'sm:text-base', 'not-italic');
+
+
+                this.startBtn.style.display = 'none'; // Hide "Start" button
+                this.newGameBtn.style.display = 'inline-block'; // Show "Play Again" button
+                
+                if (this.currentAudio) {
+                    this.currentAudio.pause();
+                    this.currentAudio.currentTime = 0;
+                    this.currentAudio = null;
+                }
+
+                this.attemptCount++; // Increment game completion count
+                console.log('endGame: Số lần thử:', this.attemptCount);
+
+                // Show result modal
+                this.showResult();
+            }
+
+            /**
+             * Displays the final game result modal.
+             */
+            showResult() {
+                console.log('showResult() được gọi. Đang chuẩn bị hiển thị modal.');
+                if (!this.resultModal) {
+                    console.error('showResult: Lỗi: Không thể hiển thị modal kết quả vì phần tử resultModal là null. Vui lòng kiểm tra lại initializeElements().');
+                    return;
+                }
+                // console.log('showResult: resultModal đã được xác nhận là tồn tại.'); // Removed for cleaner output
+
+                const accuracy = this.totalAttempts > 0 ? 
+                    Math.round((this.correctAnswers / this.totalAttempts) * 100) : 0;
+                
+                if (this.resultTitle) {
+                    this.resultTitle.textContent = this.studentName;
+                    // console.log('showResult: resultTitle đã được cập nhật.'); // Removed for cleaner output
+                } else {
+                    console.error('showResult: resultTitle là null, không thể cập nhật.');
+                }
+
+                if (this.finalScore) {
+                    this.finalScore.textContent = this.score;
+                    // console.log('showResult: finalScore đã được cập nhật.'); // Removed for cleaner output
+                } else {
+                    console.error('showResult: finalScore là null, không thể cập nhật.');
+                }
+
+                if (this.finalAccuracy) {
+                    this.finalAccuracy.textContent = `${accuracy}%`;
+                    this.finalAccuracy.classList.remove('accuracy-high', 'accuracy-medium', 'accuracy-low', 'text-green-600', 'text-yellow-600', 'text-red-600');
+                    if (accuracy >= 80) {
+                        this.finalAccuracy.classList.add('text-green-600');
+                    } else if (accuracy >= 60) {
+                        this.finalAccuracy.classList.add('text-yellow-600');
+                    } else {
+                        this.finalAccuracy.classList.add('text-red-600');
+                    }
+                    // console.log('showResult: finalAccuracy đã được cập nhật.'); // Removed for cleaner output
+                } else {
+                    console.error('showResult: finalAccuracy là null, không thể cập nhật.');
+                }
+                
+                if (this.totalAttemptsModal) {
+                    this.totalAttemptsModal.textContent = this.totalAttempts;
+                    // console.log('showResult: totalAttemptsModal đã được cập nhật.'); // Removed for cleaner output
+                } else {
+                    console.error('showResult: totalAttemptsModal là null, không thể cập nhật.');
+                }
+
+                if (this.finalAttemptCount) {
+                    this.finalAttemptCount.textContent = this.attemptCount;
+                    // console.log('showResult: finalAttemptCount đã được cập nhật.'); // Removed for cleaner output
+                } else {
+                    console.error('showResult: finalAttemptCount là null, không thể cập nhật.');
+                }
+
+                const practiceName = CONFIG.practices.find(p => p.id === this.currentPracticeId)?.name || this.currentPracticeId;
+                if (this.finalPracticeName) {
+                    this.finalPracticeName.textContent = practiceName;
+                    // console.log('showResult: finalPracticeName đã được cập nhật.'); // Removed for cleaner output
+                } else {
+                    console.error('showResult: finalPracticeName là null, không thể cập nhật.');
+                }
+                
+                let personalMsg = '';
+                let overallMsg = '';
+
+                if (accuracy >= 90) {
+                    personalMsg = `Chúc mừng ${this.studentName}! Kết quả xuất sắc!`;
+                    overallMsg = '🎉 Bạn đã thành thạo pinyin của bài này!';
+                } else if (accuracy >= 70) {
+                    personalMsg = `Tốt lắm ${this.studentName}! Bạn đang tiến bộ!`;
+                    overallMsg = '👍 Khá tốt! Hãy tiếp tục luyện tập để đạt điểm cao hơn!';
+                } else if (accuracy >= 50) {
+                    personalMsg = `${this.studentName}, hãy cố gắng thêm nhé!`;
+                    overallMsg = '📚 Cần cải thiện thêm. Hãy ôn tập và thử lại!';
+                } else {
+                    personalMsg = `${this.studentName}, đừng nản lòng!`;
+                    overallMsg = '💪 Cần luyện tập nhiều hơn. Hãy ôn tập kỹ và thử lại!';
+                }
+
+                if (this.personalMessage) {
+                    this.personalMessage.textContent = personalMsg;
+                    // console.log('showResult: personalMessage đã được cập nhật.'); // Removed for cleaner output
+                } else {
+                    console.error('showResult: personalMessage là null, không thể cập nhật.');
+                }
+
+                if (this.overallMessage) {
+                    this.overallMessage.textContent = overallMsg;
+                    // console.log('showResult: overallMessage đã được cập nhật.'); // Removed for cleaner output
+                } else {
+                    console.error('showResult: overallMessage là null, không thể cập nhật.');
+                }
+
+                this.resultModal.style.display = 'flex'; // Show modal
+                // console.log('showResult: Thuộc tính display của modal kết quả được đặt thành flex.'); // Removed for cleaner output
+                // console.log('showResult: Phần tử resultModal cuối cùng:', this.resultModal); // Removed for cleaner output
+            }
+
+            /**
+             * Resets the game to its initial state to play again.
+             * @param {boolean} directRestart - If true, starts the game immediately after reset.
+             */
+            resetGame(directRestart = false) {
+                if (this.resultModal) {
+                    this.resultModal.style.display = 'none'; // Hide result modal
+                    // console.log('resetGame: resultModal đã được ẩn.'); // Removed for cleaner output
+                } else {
+                    console.warn('resetGame: resultModal không tìm thấy, không thể ẩn.');
+                }
+                
+                this.currentWordIndex = 0;
+                this.score = 0;
+                this.correctAnswers = 0;
+                this.totalAttempts = 0;
+                this.gameStarted = false;
+                this.isPlaying = false;
+                
+                this.chineseTextDisplay.textContent = 'Bấm "Bắt đầu"';
+                this.meaningDisplay.textContent = 'để chơi';
+                // Reset font styles for initial message
+                this.chineseTextDisplay.classList.remove('chinese-font', 'pinyin-font', 'text-6xl', 'text-red-600', 'sm:text-5xl', 'text-xl', 'text-gray-800');
+                this.chineseTextDisplay.classList.add('pinyin-font', 'text-4xl', 'text-gray-800', 'sm:text-3xl');
+
+                this.meaningDisplay.classList.remove('chinese-font', 'pinyin-font', 'text-lg', 'text-gray-600', 'sm:text-base', 'italic');
+                this.meaningDisplay.classList.add('pinyin-font', 'text-lg', 'text-gray-600', 'sm:text-base', 'not-italic');
+
+                this.startBtn.style.display = 'inline-block'; // Show "Start" button
+                this.newGameBtn.style.display = 'none'; // Hide "Play Again" button
+                
+                this.shufflePracticeWords(); // Shuffle practice words for new game
+                this.prepareAndRenderInitialGrid(); // Prepare and re-render initial grid
+                this.updateStats(); // Update stats to 0
+
+                if (directRestart) {
+                    this.startGame(); // Start the game immediately
+                }
+            }
+
+            /**
+             * Returns to the practice selection screen.
+             */
+            backToSelection() {
+                if (this.resultModal) {
+                    this.resultModal.style.display = 'none'; // Hide result modal
+                    // console.log('backToSelection: resultModal đã được ẩn.'); // Removed for cleaner output
+                } else {
+                    console.warn('backToSelection: resultModal không tìm thấy, không thể ẩn.');
+                }
+                this.hideElement(this.gameSection);
+                this.showElement(this.practiceSelector);
+
+                // Reset game state completely
+                this.allWords = [];
+                this.practiceWords = [];
+                this.currentWordIndex = 0;
+                this.score = 0;
+                this.correctAnswers = 0;
+                this.totalAttempts = 0;
+                this.gameStarted = false;
+                this.isPlaying = false;
+                this.currentAudio = null;
+                this.studentName = '';
+                this.currentPracticeId = '';
+                this.attemptCount = 0;
+                this.gridPinyinCellsData = [];
+
+                this.studentNameInput.value = '';
+                this.practiceDropdown.value = '';
+                this.hideElement(this.practiceInfoDisplay);
+                this.hideError();
+                this.startBtn.disabled = true; // Disable Start button
+                this.chineseTextDisplay.textContent = 'Bấm "Tải Bài"';
+                this.meaningDisplay.textContent = 'để bắt đầu';
+                // Reset font styles for initial message
+                this.chineseTextDisplay.classList.remove('chinese-font', 'pinyin-font', 'text-6xl', 'text-red-600', 'sm:text-5xl', 'text-xl', 'text-gray-800');
+                this.chineseTextDisplay.classList.add('pinyin-font', 'text-4xl', 'text-gray-800', 'sm:text-3xl');
+
+                this.meaningDisplay.classList.remove('chinese-font', 'pinyin-font', 'text-lg', 'text-gray-600', 'sm:text-base', 'italic');
+                this.meaningDisplay.classList.add('pinyin-font', 'text-lg', 'text-gray-600', 'sm:text-base', 'not-italic');
+
+                this.updateStats(); // Update stats to 0
+                this.renderPinyinGrid(); // Clear pinyin grid
+            }
+
+            /**
+             * Randomly shuffles the order of words in the this.practiceWords array.
+             * Uses the Fisher-Yates shuffle algorithm.
+             */
+            shufflePracticeWords() {
+                for (let i = this.practiceWords.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [this.practiceWords[i], this.practiceWords[j]] = [this.practiceWords[j], this.practiceWords[i]];
+                }
+            }
+        }
+
+        // Initialize game when the web page is loaded
+        const game = new PinyinGame();
+
+        // Optimize for touch devices
+        function setupTouchOptimizations() {
+            const addTouchFeedback = (element) => {
+                element.addEventListener('touchstart', function() {
+                    this.classList.add('opacity-80');
+                }, { passive: true });
+                
+                element.addEventListener('touchend', function() {
+                    this.classList.remove('opacity-80');
+                }, { passive: true });
+                
+                element.addEventListener('touchcancel', function() {
+                    this.classList.remove('opacity-80');
+                }, { passive: true });
+            };
+
+            document.querySelectorAll('button, .pinyin-cell').forEach(addTouchFeedback);
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            game.initializePracticeSelector(); // Ensure dropdown is populated on page load
+            setupTouchOptimizations();
+        });
+
+        // Cleanup when page unloads
+        window.addEventListener('beforeunload', function() {
+            if (game.currentAudio) {
+                game.currentAudio.pause();
+            }
+        });
+
+        // Handle orientation change
+        window.addEventListener('orientationchange', function() {
+            setTimeout(() => {
+                window.scrollTo(0, 0);
+            }, 100);
+        });
+    </script>
+</body>
+</html>
